@@ -3,6 +3,7 @@
   <head>
     <script src="jspsych-6.1.0/jspsych.js"></script>
     <script src="jspsych-6.1.0/plugins/jspsych-html-keyboard-response.js"></script>
+    <script src="jspsych-6.1.0/plugins/jspsych-survey-text.js"></script>
     <link rel="stylesheet" type="text/css" href="jspsych-6.1.0/css/jspsych.css">
   </head>
   <body>
@@ -59,7 +60,68 @@
     repetitions: 16
   }
 
-  timeline.push(baseline_task_odd_left);
+  var seq_loc = 0;
+  var wm_span_verbal = {
+    timeline: [
+      {
+        type: 'html-keyboard-response',
+        stimulus: '',
+        choices: jsPsych.NO_KEYS,
+        trial_duration: 1500,
+      },
+      {
+        timeline: [
+          {
+            type: 'html-keyboard-response',
+            stimulus: function(){
+              return jsPsych.timelineVariable('sequence',true)[seq_loc]
+            },
+            choices: jsPsych.NO_KEYS,
+            trial_duration: 1250,
+            post_trial_gap: 250
+          }
+        ],
+        loop_function: function(){
+          seq_loc++;
+          if(seq_loc == jsPsych.timelineVariable('sequence', true).length){
+            return false;
+          } else {
+            return true;
+          }
+        }
+      },
+      {
+        type: 'html-keyboard-response',
+        stimulus: '',
+        choices: jsPsych.NO_KEYS,
+        trial_duration: 1250,
+        on_finish: function(){
+          seq_loc = 0;
+        }
+      },
+      {
+        type: 'survey-text',
+        questions: [{prompt: 'Type the sequence of letters in the same order you saw them'}],
+        data: {
+          phase: 'wm-span',
+          length: jsPsych.timelineVariable('sequence_length')
+        },
+        on_finish: function(data){
+          var response = JSON.parse(data.responses).Q0;
+          var normed_response = response.trim().toLowerCase();
+          var arrayed_response = normed_response.split('').filter(function(x){ return(x != " ") });
+          var correct = JSON.stringify(arrayed_response) == JSON.stringify(jsPsych.timelineVariable('sequence', true));
+          data.correct = correct;
+        }
+      }
+    ],
+    timeline_variables: [
+      {sequence: ['t','v','k']},
+      {sequence: ['g','r','q']}
+    ]
+  }
+
+  timeline.push(wm_span_verbal);
 
   jsPsych.init({
     timeline: timeline
