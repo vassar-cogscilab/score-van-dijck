@@ -1,0 +1,148 @@
+---
+title: "Analysis for SCORE replication of van Dijck et al. (2009)"
+output: html_notebook
+---
+
+```{r message=FALSE, warning=FALSE}
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+library(purrr)
+library(ez)
+```
+
+## Load in the data
+
+Loading in lightly pre-processed data. The raw data from the experiment will be converted to match the form of the expected data. This will involve some minor filtering of irrelevant trials and columns. Raw data files will be preserved as will the scripts to convert the data to the form loaded here.
+
+```{r message=FALSE, warning=FALSE}
+all.parity.data <- read_csv('data/fake/testing_data.csv')
+```
+
+## Subject inclusion criteria
+
+To be included in the analysis the subject must:
+
+* Recall at least 25% of the memory sequences correctly (at least 6 of 24)
+* Median parity judgment RT must be smaller than 4SDs from the group's median
+* Median parity judgment RT must be greater than 200ms. **This is a change from the target paper, which had no lower-bound cutoff.**
+
+```{r}
+
+group.rt <- all.parity.data %>%
+  group_by(subject) %>%
+  filter(correct==TRUE) %>%
+  summarize(median = median(rt)) %>%
+  ungroup() %>%
+  summarize(group.median = median(median), group.sd= sd(median))
+
+rt.inclusion <- all.parity.data %>%
+  group_by(subject) %>%
+  filter(correct==TRUE) %>%
+  summarize(median = median(rt)) %>%
+  mutate(rt.include = median < (group.rt$group.median + 4*group.rt$group.sd) && median > 200)
+
+mem.inclusion <- all.parity.data %>%
+  filter(phase=="dual") %>%
+  group_by(subject, block, odd) %>%
+  summarize(mem.correct = all(mem.correct)) %>%
+  group_by(subject) %>%
+  summarize(n.correct = sum(mem.correct)) %>%
+  mutate(mem.include = n.correct >= 6)
+
+final.include <- rt.inclusion %>%
+  left_join(mem.inclusion, by="subject") %>%
+  mutate(include = rt.include && mem.include)
+
+good.subjects <- final.include %>%
+  filter(include == TRUE) %>%
+  pull(subject)
+```
+
+Apply inclusion criteria to data set, keeping only subjects who meet inclusion criteria.
+
+```{r}
+filtered.parity.data <- all.parity.data %>%
+  filter(subject %in% good.subjects)
+```
+
+Find the total number of subjects left in each condition.
+
+```{r}
+filtered.parity.data %>% 
+  group_by(wmtask) %>%
+  summarize(n.subjects = length(unique(subject)))
+```
+
+## Parity judgment analysis
+
+Calculate the `dRT` for each digit, in each phase, for each subject. `dRT` is the difference in median RT for correct responses when the correct response is on the right versus on the left.
+
+```{r}
+summary.drt <- filtered.parity.data %>%
+  filter(correct==TRUE) %>%
+  group_by(subject, phase, digit, targetkey, wmtask) %>%
+  summarize(median.rt = median(rt)) %>%
+  spread(targetkey, median.rt) %>%
+  mutate(dRT = right - left)
+```
+
+Fit a linear model to each subject predicting `dRT` from digit magnitude.
+
+```{r}
+magnitude_model <- function(data){
+  model.result <- lm(dRT ~ digit, data=data)
+  return(as.numeric(model.result$coefficients[['digit']]))
+}
+
+lm.result <- summary.drt %>%
+  group_by(subject, phase, wmtask) %>%
+  nest() %>%
+  mutate(dRT.coefficient = map(data, magnitude_model)) %>%
+  select(-data) %>%
+  unnest()
+```
+
+Calculate overall RT diff from baseline to dual load and merge into lm.result data.
+
+```{r}
+covariate.diff <- filtered.parity.data %>%
+  filter(correct==TRUE) %>%
+  group_by(subject, phase) %>%
+  summarize(median.rt = median(rt)) %>%
+  spread(phase, median.rt) %>%
+  mutate(phase.diff = dual - baseline) %>%
+  select(subject, phase.diff)
+
+lm.result <- lm.result %>%
+  left_join(covariate.diff, by="subject")
+
+lm.result$subject <- factor(lm.result$subject)
+lm.result$phase <- factor(lm.result$phase)
+lm.result$wmtask <- factor(lm.result$wmtask)
+```
+
+Fit ANCOVA model to data. Goal is to predict coefficients from the linear model. WM Task type (verbal v. spatial) is a between-subjects factor. Phase (baseline v. dual-task) is a within-subjects factor. Overall RT difference between phases is a within-subjects covariate.
+
+```{r message=FALSE, warning=FALSE}
+anova.model <- ezANOVA(lm.result, dv = dRT.coefficient, between = wmtask, within = phase, within_covariates = phase.diff, wid = subject)
+
+anova.model$ANOVA
+```
+
+Generate Fig. 1 from the target paper.
+
+```{r}
+
+plotting.data <- lm.result %>%
+  group_by(wmtask, phase) %>%
+  summarize(mean.coefficient = mean(dRT.coefficient), se = sd(dRT.coefficient) / sqrt(n()))
+
+ggplot(plotting.data, aes(x=wmtask, y=mean.coefficient, ymin=mean.coefficient - se, ymax = mean.coefficient + se, color=phase))+
+  geom_hline(yintercept = 0)+
+  geom_pointrange(position = position_dodge2(width=0.5)) +
+  labs(x="Working Memory Task", y="Average Regression Weights", color="Phase")+
+  theme_bw() +
+  theme(panel.grid = element_blank())
+```
