@@ -4,6 +4,7 @@
     <script src="jspsych-6.1.0/jspsych.js"></script>
     <script src="jspsych-6.1.0/plugins/jspsych-html-keyboard-response.js"></script>
     <script src="jspsych-6.1.0/plugins/jspsych-survey-text.js"></script>
+    <script src="custom-plugins/jspsych-corsi.js"></script>
     <link rel="stylesheet" type="text/css" href="jspsych-6.1.0/css/jspsych.css">
   </head>
   <body>
@@ -121,7 +122,26 @@
     ]
   }
 
-  timeline.push(wm_span_verbal);
+  var wm_span_spatial = {
+
+  }
+
+  var corsi_test = {
+    type: 'corsi',
+    blocks: [
+      {y: 20, x: 20},
+      {y: 50, x: 50},
+      {y: 80, x: 80}
+    ],
+    mode: 'display',
+    block_size: 50,
+    arena_width: 750,
+    arena_height: 500,
+    sequence: [0,1,2,1,2,1,2,1,0],
+    sequence_duration: 250,
+    pre_stim_duration: 500
+  }
+  timeline.push(corsi_test);
 
   jsPsych.init({
     timeline: timeline
