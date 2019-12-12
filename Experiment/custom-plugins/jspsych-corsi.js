@@ -24,6 +24,9 @@ jsPsych.plugins["corsi"] = (function() {
     var css = '<style id="jspsych-corsi-css">';
     css += '#jspsych-corsi-stimulus { position: relative; width: '+trial.arena_width+'px; height: '+trial.arena_height+'px; }';
     css += '.jspsych-corsi-block { background-color: #555; position: absolute; width: '+trial.block_size+'px; height: '+trial.block_size+'px; }';
+    if(trial.mode == 'input'){
+      css += '.jspsych-corsi-block { cursor: pointer; }';
+    }
     css += '</style>';
 
     // display stimulus
@@ -38,28 +41,33 @@ jsPsych.plugins["corsi"] = (function() {
 
     display_element.innerHTML = html;
 
+    var trial_data = {
+
+    }
+
     if(trial.mode == 'display'){
       var start = performance.now();
       var sequence_location = 0;
       var display_phase = 'pre-stim';
 
       var update_display = function(){
-        var now = performance.now();
-        var elapsed = now - start;
         if(display_phase == 'pre-stim'){
           wait(update_display, trial.pre_stim_duration);
-          if(elapsed >= trial.pre_stim_duration){
-            display_phase = 'sequence'
-            document.querySelector('.jspsych-corsi-block[data-id="'+trial.sequence[sequence_location]+'"]').style.backgroundColor = 'red';
-            wait(update_display, trial.sequence_duration);
-          }
+          display_phase = 'sequence';
         } else if(display_phase == 'sequence'){
-          document.querySelector('.jspsych-corsi-block[data-id="'+trial.sequence[sequence_location]+'"]').style.backgroundColor = '#555';
-          sequence_location++;
           if(sequence_location < trial.sequence.length){
             document.querySelector('.jspsych-corsi-block[data-id="'+trial.sequence[sequence_location]+'"]').style.backgroundColor = 'red';
             wait(update_display, trial.sequence_duration)
+            display_phase = 'iti';
           }
+          if(sequence_location == trial.sequence.length){
+            end_trial();
+          }
+        } else if(display_phase == 'iti'){
+          document.querySelector('.jspsych-corsi-block[data-id="'+trial.sequence[sequence_location]+'"]').style.backgroundColor = '#555';
+          sequence_location++;
+          wait(update_display, trial.sequence_iti)
+          display_phase = 'sequence';
         }
       }
 
@@ -82,8 +90,52 @@ jsPsych.plugins["corsi"] = (function() {
 
     if(trial.mode == 'input'){
 
+      var clicks = [];
+
+      var correct_animation = [
+        { backgroundColor: '#555' },
+        { backgroundColor: '#0f0', offset: 0.2 },
+        { backgroundColor: '#555' }
+      ];
+
+      var incorrect_animation = [
+        { backgroundColor: '#555' },
+        { backgroundColor: '#f00', offset: 0.2 },
+        { backgroundColor: '#555' }
+      ];
+
+      var animation_timing = {
+        duration: 500,
+        iterations: 1
+      }
+
+      var register_click = function(id){
+        clicks.push(id);
+        var correct = id == trial.sequence[clicks.length-1];
+        if(correct){
+          document.querySelector('.jspsych-corsi-block[data-id="'+id+'"]').animate(correct_animation, animation_timing)
+        } else {
+          document.querySelector('.jspsych-corsi-block[data-id="'+id+'"]').animate(incorrect_animation, animation_timing);
+          setTimeout(end_trial, 500);
+        }
+        if(clicks.length == trial.sequence.length){
+          setTimeout(end_trial, 500); // allows animation to finish?
+        }
+      }
+
+      var blocks = display_element.querySelectorAll('.jspsych-corsi-block');
+      for(var i = 0; i<blocks.length; i++){
+        blocks[i].addEventListener('click', function(e){
+          register_click(e.target.getAttribute('data-id'));
+        })
+      }
     }
 
+    var end_trial = function(){
+      display_element.innerHTML = "";
+
+      jsPsych.finishTrial(trial_data);
+    }
     
   };
 
