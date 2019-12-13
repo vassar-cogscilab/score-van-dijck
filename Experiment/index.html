@@ -3,6 +3,7 @@
   <head>
     <script src="jspsych-6.1.0/jspsych.js"></script>
     <script src="jspsych-6.1.0/plugins/jspsych-html-keyboard-response.js"></script>
+    <script src="jspsych-6.1.0/plugins/jspsych-call-function.js"></script>
     <script src="custom-plugins/jspsych-echo-response.js"></script>
     <script src="custom-plugins/jspsych-corsi.js"></script>
     <link rel="stylesheet" type="text/css" href="jspsych-6.1.0/css/jspsych.css">
@@ -403,29 +404,29 @@
       }
     ],
     timeline_variables: [
-      {sequence: ['t','v','k']},
-      {sequence: ['g','r','q']},
-      {sequence: ['g','r','q']},
+      {sequence_length: 3, sequence: jsPsych.randomization.sampleWithoutReplacement(['q','w','r','t','p','s','d','f','g','h','j','k','l','z','x','c','v','b','n','m'], 3)},
+      {sequence_length: 3, sequence: jsPsych.randomization.sampleWithoutReplacement(['q','w','r','t','p','s','d','f','g','h','j','k','l','z','x','c','v','b','n','m'], 3)},
+      {sequence_length: 3, sequence: jsPsych.randomization.sampleWithoutReplacement(['q','w','r','t','p','s','d','f','g','h','j','k','l','z','x','c','v','b','n','m'], 3)},
 
-      {sequence: ['g','r','q','w']},
-      {sequence: ['g','r','q','w']},
-      {sequence: ['g','r','q','w']},
+      {sequence_length: 4, sequence: jsPsych.randomization.sampleWithoutReplacement(['q','w','r','t','p','s','d','f','g','h','j','k','l','z','x','c','v','b','n','m'], 4)},
+      {sequence_length: 4, sequence: jsPsych.randomization.sampleWithoutReplacement(['q','w','r','t','p','s','d','f','g','h','j','k','l','z','x','c','v','b','n','m'], 4)},
+      {sequence_length: 4, sequence: jsPsych.randomization.sampleWithoutReplacement(['q','w','r','t','p','s','d','f','g','h','j','k','l','z','x','c','v','b','n','m'], 4)},
 
-      {sequence: ['g','r','q','p','k']},
-      {sequence: ['g','r','q','p','k']},
-      {sequence: ['g','r','q','p','k']},
+      {sequence_length: 5, sequence: jsPsych.randomization.sampleWithoutReplacement(['q','w','r','t','p','s','d','f','g','h','j','k','l','z','x','c','v','b','n','m'], 5)},
+      {sequence_length: 5, sequence: jsPsych.randomization.sampleWithoutReplacement(['q','w','r','t','p','s','d','f','g','h','j','k','l','z','x','c','v','b','n','m'], 5)},
+      {sequence_length: 5, sequence: jsPsych.randomization.sampleWithoutReplacement(['q','w','r','t','p','s','d','f','g','h','j','k','l','z','x','c','v','b','n','m'], 5)},
 
-      {sequence: ['g','r','q','r','v','d']},
-      {sequence: ['g','r','q','r','v','d']},
-      {sequence: ['g','r','q','r','v','d']},
+      {sequence_length: 6, sequence: jsPsych.randomization.sampleWithoutReplacement(['q','w','r','t','p','s','d','f','g','h','j','k','l','z','x','c','v','b','n','m'], 6)},
+      {sequence_length: 6, sequence: jsPsych.randomization.sampleWithoutReplacement(['q','w','r','t','p','s','d','f','g','h','j','k','l','z','x','c','v','b','n','m'], 6)},
+      {sequence_length: 6, sequence: jsPsych.randomization.sampleWithoutReplacement(['q','w','r','t','p','s','d','f','g','h','j','k','l','z','x','c','v','b','n','m'], 6)},
 
-      {sequence: ['g','r','q','m','r','x','p']},
-      {sequence: ['g','r','q','m','r','x','p']},
-      {sequence: ['g','r','q','m','r','x','p']},
+      {sequence_length: 7, sequence: jsPsych.randomization.sampleWithoutReplacement(['q','w','r','t','p','s','d','f','g','h','j','k','l','z','x','c','v','b','n','m'], 7)},
+      {sequence_length: 7, sequence: jsPsych.randomization.sampleWithoutReplacement(['q','w','r','t','p','s','d','f','g','h','j','k','l','z','x','c','v','b','n','m'], 7)},
+      {sequence_length: 7, sequence: jsPsych.randomization.sampleWithoutReplacement(['q','w','r','t','p','s','d','f','g','h','j','k','l','z','x','c','v','b','n','m'], 7)},
 
-      {sequence: ['g','r','q','w','z','k','c','n']},
-      {sequence: ['g','r','q','w','z','k','c','n']},
-      {sequence: ['g','r','q','w','z','k','c','n']}
+      {sequence_length: 8, sequence: jsPsych.randomization.sampleWithoutReplacement(['q','w','r','t','p','s','d','f','g','h','j','k','l','z','x','c','v','b','n','m'], 8)},
+      {sequence_length: 8, sequence: jsPsych.randomization.sampleWithoutReplacement(['q','w','r','t','p','s','d','f','g','h','j','k','l','z','x','c','v','b','n','m'], 8)},
+      {sequence_length: 8, sequence: jsPsych.randomization.sampleWithoutReplacement(['q','w','r','t','p','s','d','f','g','h','j','k','l','z','x','c','v','b','n','m'], 8)}
     ]
   }
 
@@ -473,13 +474,56 @@
         block_size: 50,
         arena_width: 750,
         arena_height: 500,
-        post_trial_gap:1500
+        post_trial_gap:1500,
+        data: {
+          phase: 'wm-span',
+          length: jsPsych.timelineVariable('sequence_length')
+        }
       }
     ],
     timeline_variables: [
-      {sequence: [0,1,2]},
-      {sequence: [5,4,3]}
+      {sequence_length: 3, sequence: jsPsych.randomization.sampleWithoutReplacement([0,1,2,3,4,5,6,7,8], 3)},
+      {sequence_length: 3, sequence: jsPsych.randomization.sampleWithoutReplacement([0,1,2,3,4,5,6,7,8], 3)},
+      {sequence_length: 3, sequence: jsPsych.randomization.sampleWithoutReplacement([0,1,2,3,4,5,6,7,8], 3)},
+
+      {sequence_length: 4, sequence: jsPsych.randomization.sampleWithoutReplacement([0,1,2,3,4,5,6,7,8], 4)},
+      {sequence_length: 4, sequence: jsPsych.randomization.sampleWithoutReplacement([0,1,2,3,4,5,6,7,8], 4)},
+      {sequence_length: 4, sequence: jsPsych.randomization.sampleWithoutReplacement([0,1,2,3,4,5,6,7,8], 4)},
+
+      {sequence_length: 5, sequence: jsPsych.randomization.sampleWithoutReplacement([0,1,2,3,4,5,6,7,8], 5)},
+      {sequence_length: 5, sequence: jsPsych.randomization.sampleWithoutReplacement([0,1,2,3,4,5,6,7,8], 5)},
+      {sequence_length: 5, sequence: jsPsych.randomization.sampleWithoutReplacement([0,1,2,3,4,5,6,7,8], 5)},
+
+      {sequence_length: 6, sequence: jsPsych.randomization.sampleWithoutReplacement([0,1,2,3,4,5,6,7,8], 6)},
+      {sequence_length: 6, sequence: jsPsych.randomization.sampleWithoutReplacement([0,1,2,3,4,5,6,7,8], 6)},
+      {sequence_length: 6, sequence: jsPsych.randomization.sampleWithoutReplacement([0,1,2,3,4,5,6,7,8], 6)},
+
+      {sequence_length: 7, sequence: jsPsych.randomization.sampleWithoutReplacement([0,1,2,3,4,5,6,7,8], 7)},
+      {sequence_length: 7, sequence: jsPsych.randomization.sampleWithoutReplacement([0,1,2,3,4,5,6,7,8], 7)},
+      {sequence_length: 7, sequence: jsPsych.randomization.sampleWithoutReplacement([0,1,2,3,4,5,6,7,8], 7)},
+
+      {sequence_length: 8, sequence: jsPsych.randomization.sampleWithoutReplacement([0,1,2,3,4,5,6,7,8], 8)},
+      {sequence_length: 8, sequence: jsPsych.randomization.sampleWithoutReplacement([0,1,2,3,4,5,6,7,8], 8)},
+      {sequence_length: 8, sequence: jsPsych.randomization.sampleWithoutReplacement([0,1,2,3,4,5,6,7,8], 8)}
     ]
+  }
+
+  var span_calculation = {
+    type: 'call-function',
+    data: {
+      phase: 'calculate-span'
+    },
+    func: function(){
+      var span = 2;
+      for(var wmspan = 8; wmspan >= 3; wmspan--){
+        var total_correct = jsPsych.data.get().filter({phase: 'wm-span', length: wmspan, correct: true}).count();
+        if(total_correct >= 2){
+          span = wmspan;
+          break;
+        }
+      }
+      return span;
+    }
   }
 
   var load_verbal = {
@@ -545,7 +589,8 @@
     ]
   }
 
-  timeline.push(wm_span_verbal);
+  timeline.push(wm_span_spatial);
+  timeline.push(span_calculation);
 
   jsPsych.init({
     timeline: timeline

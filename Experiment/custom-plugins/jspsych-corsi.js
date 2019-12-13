@@ -42,7 +42,7 @@ jsPsych.plugins["corsi"] = (function() {
     display_element.innerHTML = html;
 
     var trial_data = {
-
+      response: []
     }
 
     if(trial.mode == 'display'){
@@ -90,8 +90,6 @@ jsPsych.plugins["corsi"] = (function() {
 
     if(trial.mode == 'input'){
 
-      var clicks = [];
-
       var correct_animation = [
         { backgroundColor: '#555' },
         { backgroundColor: '#0f0', offset: 0.2 },
@@ -110,15 +108,20 @@ jsPsych.plugins["corsi"] = (function() {
       }
 
       var register_click = function(id){
-        clicks.push(id);
-        var correct = id == trial.sequence[clicks.length-1];
+        if(typeof trial.data.correct == 'undefined'){
+          return; // extra click during timeout, do nothing
+        }
+        trial_data.response.push(id);
+        var correct = id == trial.sequence[trial_data.response.length-1];
         if(correct){
           document.querySelector('.jspsych-corsi-block[data-id="'+id+'"]').animate(correct_animation, animation_timing)
         } else {
           document.querySelector('.jspsych-corsi-block[data-id="'+id+'"]').animate(incorrect_animation, animation_timing);
+          trial_data.correct = false;
           setTimeout(end_trial, 500);
         }
-        if(clicks.length == trial.sequence.length){
+        if(trial_data.response.length == trial.sequence.length){
+          trial_data.correct = true;
           setTimeout(end_trial, 500); // allows animation to finish?
         }
       }

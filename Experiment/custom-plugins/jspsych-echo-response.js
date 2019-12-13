@@ -63,13 +63,15 @@ jsPsych.plugins["echo-response"] = (function() {
       if(correct){
         document.querySelector(".response-echo:last-of-type").animate(correct_animation, animation_timing)
       } else {
-        document.querySelector(".response-echo:last-of-type").animate(incorrect_animation, animation_timing)
+        document.querySelector(".response-echo:last-of-type").animate(incorrect_animation, animation_timing);
         jsPsych.pluginAPI.cancelKeyboardResponse(keyboardListener);
+        trial_data.correct = false;
         setTimeout(end_trial, 500);
       }
 
       if(trial_data.response.length == trial.sequence.length){
         jsPsych.pluginAPI.cancelKeyboardResponse(keyboardListener);
+        trial_data.correct = true;
         setTimeout(end_trial, 500);
       }
     }
