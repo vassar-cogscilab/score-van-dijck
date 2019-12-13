@@ -3,7 +3,7 @@
   <head>
     <script src="jspsych-6.1.0/jspsych.js"></script>
     <script src="jspsych-6.1.0/plugins/jspsych-html-keyboard-response.js"></script>
-    <script src="jspsych-6.1.0/plugins/jspsych-survey-text.js"></script>
+    <script src="custom-plugins/jspsych-echo-response.js"></script>
     <script src="custom-plugins/jspsych-corsi.js"></script>
     <link rel="stylesheet" type="text/css" href="jspsych-6.1.0/css/jspsych.css">
     <style>
@@ -319,7 +319,7 @@
   }
 
   /* add baseline to timeline */
-  timeline.push(baseline_intro_instructions);
+ /* timeline.push(baseline_intro_instructions);
   if(odd_left_first){
     timeline.push(baseline_task_odd_left_instructions);
     timeline.push(baseline_practice_odd_left);
@@ -342,9 +342,15 @@
     timeline.push(baseline_practice_odd_right);
     timeline.push(baseline_continue);
     timeline.push(baseline_task_odd_right);
-  }
+  }*/
 
   /* define WM tasks */
+
+  var baseline_end = {
+    type: 'html-keyboard-response',
+    stimulus: '<div class="instructions"><p>You have completed part 1 of the experiment!</p>'+
+      '<p'
+  }
 
   var seq_loc = 0;
   var wm_span_verbal = {
@@ -360,7 +366,7 @@
           {
             type: 'html-keyboard-response',
             stimulus: function(){
-              return jsPsych.timelineVariable('sequence',true)[seq_loc]
+              return '<p>'+jsPsych.timelineVariable('sequence',true)[seq_loc]+'</p>'
             },
             choices: jsPsych.NO_KEYS,
             trial_duration: 1250,
@@ -386,18 +392,13 @@
         }
       },
       {
-        type: 'survey-text',
-        questions: [{prompt: 'Type the sequence of letters in the same order you saw them'}],
+        type: 'echo-response',
+        prompt: '<div class="instructions"><p>Type the sequence of letters in the same order you saw them</p></div>',
+        sequence: jsPsych.timelineVariable('sequence'),
+        echo_font_size: 48,
         data: {
           phase: 'wm-span',
           length: jsPsych.timelineVariable('sequence_length')
-        },
-        on_finish: function(data){
-          var response = JSON.parse(data.responses).Q0;
-          var normed_response = response.trim().toLowerCase();
-          var arrayed_response = normed_response.split('').filter(function(x){ return(x != " ") });
-          var correct = JSON.stringify(arrayed_response) == JSON.stringify(jsPsych.timelineVariable('sequence', true));
-          data.correct = correct;
         }
       }
     ],
@@ -544,7 +545,7 @@
     ]
   }
 
-  timeline.push(baseline_task_odd_left);
+  timeline.push(wm_span_verbal);
 
   jsPsych.init({
     timeline: timeline
