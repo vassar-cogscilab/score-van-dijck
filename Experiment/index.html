@@ -29,6 +29,12 @@
   var run_phase_2 = true;
   var run_phase_3 = true;
 
+  jsPsych.data.addProperties({
+    subject_id: subject_id,
+    odd_left_first: odd_left_first,
+    wm_type: wm_type
+  });
+
   var timeline = [];
 
   //#region phase 1
