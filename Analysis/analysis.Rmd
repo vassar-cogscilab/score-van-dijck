@@ -41,7 +41,7 @@ rt.inclusion <- all.parity.data %>%
   group_by(subject) %>%
   filter(correct==TRUE) %>%
   summarize(median = median(rt)) %>%
-  mutate(rt.include = median < (group.rt$group.median + 4*group.rt$group.sd) && median > 200)
+  mutate(rt.include = median < (group.rt$group.median + 4*group.rt$group.sd) && median > 250)
 
 mem.inclusion <- all.parity.data %>%
   filter(phase=="dual") %>%
@@ -73,6 +73,19 @@ Find the total number of subjects left in each condition.
 filtered.parity.data %>% 
   group_by(wmtask) %>%
   summarize(n.subjects = length(unique(subject)))
+```
+
+## Working memory performance in phase 3
+
+```{r}
+mem.phase.3 <- all.parity.data %>%
+  filter(phase=="dual") %>%
+  group_by(subject, wmtask, block, odd) %>%
+  summarize(mem.correct = all(mem.correct)) %>%
+  group_by(subject, wmtask) %>%
+  summarize(n.correct = sum(mem.correct))
+
+t.test(n.correct ~ wmtask, data=mem.phase.3, var.equal=T)
 ```
 
 ## Parity judgment analysis
@@ -126,7 +139,7 @@ lm.result$wmtask <- factor(lm.result$wmtask)
 Fit ANCOVA model to data. Goal is to predict coefficients from the linear model. WM Task type (verbal v. spatial) is a between-subjects factor. Phase (baseline v. dual-task) is a within-subjects factor. Overall RT difference between phases is a within-subjects covariate.
 
 ```{r message=FALSE, warning=FALSE}
-anova.model <- ezANOVA(lm.result, dv = dRT.coefficient, between = wmtask, within = phase, within_covariates = phase.diff, wid = subject)
+anova.model <- ezANOVA(lm.result, dv = dRT.coefficient, between = wmtask, within = phase, between_covariates = phase.diff, wid = subject)
 
 anova.model$ANOVA
 ```
