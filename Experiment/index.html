@@ -53,6 +53,10 @@
   var wm_span_spatial_block_gap_duration = 500
   var wm_span_spatial_post_sequence_blank_duration = 1500
 
+  var baseline_repetitions_per_digit_side = 16;
+
+  var load_repetitions_per_digit_per_trial = 2;
+
   // #endregion //
 
   var timeline = [];
@@ -306,7 +310,7 @@
       phase: 'baseline'
     },
     randomize_order: true,
-    repetitions: 2
+    repetitions: baseline_repetitions_per_digit_side
   }
 
   var baseline_task_odd_right = {
@@ -358,7 +362,7 @@
       phase: 'baseline'
     },
     randomize_order: true,
-    repetitions: 2
+    repetitions: baseline_repetitions_per_digit_side
   }
 
   var baseline_switch_instructions = {
@@ -912,7 +916,7 @@
       {digit: 9, parity: 'odd', target_response: 'a'},
     ],
     randomize_order: true,
-    repetitions: 1
+    repetitions: load_repetitions_per_digit_per_trial
   }
 
   var load_task_odd_right = {
@@ -961,7 +965,7 @@
       {digit: 9, parity: 'odd', target_response: 'l'},
     ],
     randomize_order: true,
-    repetitions: 1
+    repetitions: load_repetitions_per_digit_per_trial
   }
 
   var load_verbal_practice_left = {
@@ -1231,7 +1235,9 @@
       {
         type: 'corsi',
         mode: 'display',
-        sequence: jsPsych.timelineVariable('sequence'),
+        sequence: function(){
+          return jsPsych.timelineVariable('sequence', true).slice(0,phase_3_span)
+        },
         blocks: corsi_original_config,
         sequence_duration: wm_span_spatial_block_duration,
         sequence_iti: wm_span_spatial_block_gap_duration,
@@ -1242,26 +1248,29 @@
       {
         type: 'corsi',
         mode: 'input',
-        sequence: jsPsych.timelineVariable('sequence'),
+        sequence: function(){
+          return jsPsych.timelineVariable('sequence', true).slice(0,phase_3_span)
+        },
         blocks: corsi_original_config,
         post_trial_gap: wm_span_spatial_post_sequence_blank_duration
       }
     ],
     timeline_variables: [
-      {sequence: [0,1,2]},
-      {sequence: [5,4,3]}
+      {sequence: jsPsych.randomization.sampleWithoutReplacement([0,1,2,3,4,5,6,7,8], 7)}
     ],
     data: {
       phase: 'load-practice'
     }
   }
 
-  var load_spatial_practice_left = {
+  var load_spatial_practice_right = {
     timeline: [
       {
         type: 'corsi',
         mode: 'display',
-        sequence: jsPsych.timelineVariable('sequence'),
+        sequence: function(){
+          return jsPsych.timelineVariable('sequence', true).slice(0,phase_3_span)
+        },
         blocks: corsi_original_config,
         sequence_duration: wm_span_spatial_block_duration,
         sequence_iti: wm_span_spatial_block_gap_duration,
@@ -1272,14 +1281,15 @@
       {
         type: 'corsi',
         mode: 'input',
-        sequence: jsPsych.timelineVariable('sequence'),
+        sequence: function(){
+          return jsPsych.timelineVariable('sequence', true).slice(0,phase_3_span)
+        },
         blocks: corsi_original_config,
         post_trial_gap: wm_span_spatial_post_sequence_blank_duration
       }
     ],
     timeline_variables: [
-      {sequence: [0,1,2]},
-      {sequence: [5,4,3]}
+    {sequence: jsPsych.randomization.sampleWithoutReplacement([0,1,2,3,4,5,6,7,8], 7)}
     ],
     data: {
       phase: 'load-practice'
