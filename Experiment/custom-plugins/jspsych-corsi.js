@@ -20,6 +20,15 @@ jsPsych.plugins["corsi"] = (function() {
         type: jsPsych.plugins.parameterType.INT,
         default: undefined,
         array: true
+      },
+      block_size: {
+        default: 50
+      },
+      arena_width: {
+        default:600
+      },
+      arena_height: {
+        default:600
       }
     }
   }

@@ -32,6 +32,7 @@
   });
 
   // #region experiment parameters //
+  
   var run_phase_1 = true;
   var run_phase_2 = true;
   var run_phase_3 = true;
@@ -43,9 +44,16 @@
   var parity_error_text_duration = 3000
   var parity_error_text_blank_duration = 1000
 
-  // #endregion //
+  var wm_span_verbal_pre_blank_duration = 1500
+  var wm_span_verbal_letter_duration = 1250
+  var wm_span_verbal_letter_post_blank_duration = 250
 
-  
+  var wm_span_spatial_pre_sequence_duration = 1500
+  var wm_span_spatial_block_duration = 1000
+  var wm_span_spatial_block_gap_duration = 500
+  var wm_span_spatial_post_sequence_blank_duration = 1500
+
+  // #endregion //
 
   var timeline = [];
 
@@ -436,7 +444,7 @@
         type: 'html-keyboard-response',
         stimulus: '',
         choices: jsPsych.NO_KEYS,
-        trial_duration: 1500,
+        trial_duration: wm_span_verbal_pre_blank_duration,
       },
       {
         timeline: [
@@ -446,8 +454,8 @@
               return '<p>'+jsPsych.timelineVariable('sequence',true)[seq_loc]+'</p>'
             },
             choices: jsPsych.NO_KEYS,
-            trial_duration: 1250,
-            post_trial_gap: 250
+            trial_duration: wm_span_verbal_letter_duration,
+            post_trial_gap: wm_span_verbal_letter_post_blank_duration
           }
         ],
         loop_function: function(){
@@ -463,7 +471,7 @@
         type: 'html-keyboard-response',
         stimulus: '',
         choices: jsPsych.NO_KEYS,
-        trial_duration: 1250,
+        trial_duration: wm_span_verbal_pre_blank_duration - wm_span_verbal_letter_post_blank_duration,
         on_finish: function(){
           seq_loc = 0;
         }
@@ -505,7 +513,7 @@
         type: 'html-keyboard-response',
         stimulus: '',
         choices: jsPsych.NO_KEYS,
-        trial_duration: 1500,
+        trial_duration: wm_span_verbal_pre_blank_duration,
       },
       {
         timeline: [
@@ -515,8 +523,8 @@
               return '<p>'+jsPsych.timelineVariable('sequence',true)[seq_loc]+'</p>'
             },
             choices: jsPsych.NO_KEYS,
-            trial_duration: 1250,
-            post_trial_gap: 250
+            trial_duration: wm_span_verbal_letter_duration,
+            post_trial_gap: wm_span_verbal_letter_post_blank_duration
           }
         ],
         loop_function: function(){
@@ -532,7 +540,7 @@
         type: 'html-keyboard-response',
         stimulus: '',
         choices: jsPsych.NO_KEYS,
-        trial_duration: 1250,
+        trial_duration: wm_span_verbal_pre_blank_duration - wm_span_verbal_letter_post_blank_duration,
         on_finish: function(){
           seq_loc = 0;
         }
@@ -611,45 +619,19 @@
         type: 'corsi',
         mode: 'display',
         sequence: jsPsych.timelineVariable('sequence'),
-        blocks: [
-          {y: 80, x: 45},
-          {y: 85, x: 80},
-          {y: 70, x: 20},
-          {y: 60, x: 70},
-          {y: 50, x: 35},
-          {y: 40, x: 15},
-          {y: 45, x: 90},
-          {y: 35, x: 60},
-          {y: 25, x: 47}
-        ],
-        block_size: 50,
-        arena_width: 750,
-        arena_height: 500,
-        sequence_duration: 1000,
-        sequence_iti: 500,
-        pre_stim_duration: 1500,
-        post_trial_gap:1500
+        blocks: corsi_original_config,
+        sequence_duration: wm_span_spatial_block_duration,
+        sequence_iti: wm_span_spatial_block_gap_duration,
+        pre_stim_duration: wm_span_spatial_pre_sequence_duration,
+        post_trial_gap: wm_span_spatial_post_sequence_blank_duration
       },
 
       {
         type: 'corsi',
         mode: 'input',
         sequence: jsPsych.timelineVariable('sequence'),
-        blocks: [
-          {y: 80, x: 45},
-          {y: 85, x: 80},
-          {y: 70, x: 20},
-          {y: 60, x: 70},
-          {y: 50, x: 35},
-          {y: 40, x: 15},
-          {y: 45, x: 90},
-          {y: 35, x: 60},
-          {y: 25, x: 47}
-        ],
-        block_size: 50,
-        arena_width: 750,
-        arena_height: 500,
-        post_trial_gap:1500,
+        blocks: corsi_original_config,
+        post_trial_gap: wm_span_spatial_post_sequence_blank_duration,
         prompt: 'Click the squares in the correct order',
         data: {
           task: 'wm-span',
@@ -683,45 +665,19 @@
         type: 'corsi',
         mode: 'display',
         sequence: jsPsych.timelineVariable('sequence'),
-        blocks: [
-          {y: 80, x: 45},
-          {y: 85, x: 80},
-          {y: 70, x: 20},
-          {y: 60, x: 70},
-          {y: 50, x: 35},
-          {y: 40, x: 15},
-          {y: 45, x: 90},
-          {y: 35, x: 60},
-          {y: 25, x: 47}
-        ],
-        block_size: 50,
-        arena_width: 750,
-        arena_height: 500,
-        sequence_duration: 1000,
-        sequence_iti: 500,
-        pre_stim_duration: 15000000,
-        post_trial_gap:1500
+        blocks: corsi_original_config,
+        sequence_duration: wm_span_spatial_block_duration,
+        sequence_iti: wm_span_spatial_block_gap_duration,
+        pre_stim_duration: wm_span_spatial_pre_sequence_duration,
+        post_trial_gap: wm_span_spatial_post_sequence_blank_duration
       },
 
       {
         type: 'corsi',
         mode: 'input',
         sequence: jsPsych.timelineVariable('sequence'),
-        blocks: [
-          {y: 80, x: 45},
-          {y: 85, x: 80},
-          {y: 70, x: 20},
-          {y: 60, x: 70},
-          {y: 50, x: 35},
-          {y: 40, x: 15},
-          {y: 45, x: 90},
-          {y: 35, x: 60},
-          {y: 25, x: 47}
-        ],
-        block_size: 50,
-        arena_width: 750,
-        arena_height: 500,
-        post_trial_gap:1500,
+        blocks: corsi_original_config,
+        post_trial_gap: wm_span_spatial_post_sequence_blank_duration,
         prompt: 'Click the squares in the correct order',
         data: {
           task: 'wm-span',
@@ -915,7 +871,7 @@
       {
         type: 'html-keyboard-response',
         stimulus: '<p>+</p>',
-        trial_duration: 500,
+        trial_duration: parity_fixation_duration,
         choices: jsPsych.NO_KEYS
       },
       {
@@ -940,9 +896,9 @@
             return '<p style="color: red;">+</p>';
           }
         },
-        trial_duration: 250,
+        trial_duration: parity_feedback_fixation_duration,
         choices: jsPsych.NO_KEYS,
-        post_trial_gap: 250
+        post_trial_gap: parity_blank_duration
       }
     ],
     timeline_variables: [
@@ -964,7 +920,7 @@
       {
         type: 'html-keyboard-response',
         stimulus: '<p>+</p>',
-        trial_duration: 500,
+        trial_duration: parity_fixation_duration,
         choices: jsPsych.NO_KEYS
       },
       {
@@ -989,9 +945,9 @@
             return '<p style="color: red;">+</p>';
           }
         },
-        trial_duration: 250,
+        trial_duration: parity_feedback_fixation_duration,
         choices: jsPsych.NO_KEYS,
-        post_trial_gap: 250
+        post_trial_gap: parity_blank_duration
       }
     ],
     timeline_variables: [
@@ -1014,7 +970,7 @@
         type: 'html-keyboard-response',
         stimulus: '',
         choices: jsPsych.NO_KEYS,
-        trial_duration: 1500,
+        trial_duration: wm_span_verbal_pre_blank_duration,
       },
       {
         timeline: [
@@ -1024,8 +980,8 @@
               return '<p>'+jsPsych.timelineVariable('sequence',true)[seq_loc]+'</p>'
             },
             choices: jsPsych.NO_KEYS,
-            trial_duration: 1250,
-            post_trial_gap: 250
+            trial_duration: wm_span_verbal_letter_duration,
+            post_trial_gap: wm_span_verbal_letter_post_blank_duration
           }
         ],
         loop_function: function(){
@@ -1041,7 +997,7 @@
         type: 'html-keyboard-response',
         stimulus: '',
         choices: jsPsych.NO_KEYS,
-        trial_duration: 1250,
+        trial_duration: wm_span_verbal_pre_blank_duration - wm_span_verbal_letter_post_blank_duration,
         on_finish: function(){
           seq_loc = 0;
         }
@@ -1074,7 +1030,7 @@
         type: 'html-keyboard-response',
         stimulus: '',
         choices: jsPsych.NO_KEYS,
-        trial_duration: 1500,
+        trial_duration: wm_span_verbal_pre_blank_duration,
       },
       {
         timeline: [
@@ -1084,8 +1040,8 @@
               return '<p>'+jsPsych.timelineVariable('sequence',true)[seq_loc]+'</p>'
             },
             choices: jsPsych.NO_KEYS,
-            trial_duration: 1250,
-            post_trial_gap: 250
+            trial_duration: wm_span_verbal_letter_duration,
+            post_trial_gap: wm_span_verbal_letter_post_blank_duration
           }
         ],
         loop_function: function(){
@@ -1101,7 +1057,7 @@
         type: 'html-keyboard-response',
         stimulus: '',
         choices: jsPsych.NO_KEYS,
-        trial_duration: 1250,
+        trial_duration: wm_span_verbal_pre_blank_duration - wm_span_verbal_letter_post_blank_duration,
         on_finish: function(){
           seq_loc = 0;
         }
@@ -1134,7 +1090,7 @@
         type: 'html-keyboard-response',
         stimulus: '',
         choices: jsPsych.NO_KEYS,
-        trial_duration: 1500,
+        trial_duration: wm_span_verbal_pre_blank_duration,
       },
       {
         timeline: [
@@ -1144,8 +1100,8 @@
               return '<p>'+jsPsych.timelineVariable('sequence',true)[seq_loc]+'</p>'
             },
             choices: jsPsych.NO_KEYS,
-            trial_duration: 1250,
-            post_trial_gap: 250
+            trial_duration: wm_span_verbal_letter_duration,
+            post_trial_gap: wm_span_verbal_letter_post_blank_duration
           }
         ],
         loop_function: function(){
@@ -1161,7 +1117,7 @@
         type: 'html-keyboard-response',
         stimulus: '',
         choices: jsPsych.NO_KEYS,
-        trial_duration: 1250,
+        trial_duration: wm_span_verbal_pre_blank_duration - wm_span_verbal_letter_post_blank_duration,
         on_finish: function(){
           seq_loc = 0;
         }
@@ -1205,7 +1161,7 @@
         type: 'html-keyboard-response',
         stimulus: '',
         choices: jsPsych.NO_KEYS,
-        trial_duration: 1500,
+        trial_duration: wm_span_verbal_pre_blank_duration,
       },
       {
         timeline: [
@@ -1215,8 +1171,8 @@
               return '<p>'+jsPsych.timelineVariable('sequence',true)[seq_loc]+'</p>'
             },
             choices: jsPsych.NO_KEYS,
-            trial_duration: 1250,
-            post_trial_gap: 250
+            trial_duration: wm_span_verbal_letter_duration,
+            post_trial_gap: wm_span_verbal_letter_post_blank_duration
           }
         ],
         loop_function: function(){
@@ -1232,7 +1188,7 @@
         type: 'html-keyboard-response',
         stimulus: '',
         choices: jsPsych.NO_KEYS,
-        trial_duration: 1250,
+        trial_duration: wm_span_verbal_pre_blank_duration - wm_span_verbal_letter_post_blank_duration,
         on_finish: function(){
           seq_loc = 0;
         }
@@ -1276,45 +1232,19 @@
         type: 'corsi',
         mode: 'display',
         sequence: jsPsych.timelineVariable('sequence'),
-        blocks: [
-          {y: 25, x: 25},
-          {y: 30, x: 50},
-          {y: 80, x: 85},
-          {y: 40, x: 70},
-          {y: 55, x: 65},
-          {y: 70, x: 45},
-          {y: 10, x: 30},
-          {y: 65, x: 15},
-          {y: 85, x: 20}
-        ],
-        block_size: 50,
-        arena_width: 750,
-        arena_height: 500,
-        sequence_duration: 1000,
-        sequence_iti: 500,
-        pre_stim_duration: 1500,
-        post_trial_gap: 1500
+        blocks: corsi_original_config,
+        sequence_duration: wm_span_spatial_block_duration,
+        sequence_iti: wm_span_spatial_block_gap_duration,
+        pre_stim_duration: wm_span_spatial_pre_sequence_duration,
+        post_trial_gap: wm_span_spatial_post_sequence_blank_duration
       },
       load_task_odd_left,
       {
         type: 'corsi',
         mode: 'input',
         sequence: jsPsych.timelineVariable('sequence'),
-        blocks: [
-          {y: 25, x: 25},
-          {y: 30, x: 50},
-          {y: 80, x: 85},
-          {y: 40, x: 70},
-          {y: 55, x: 65},
-          {y: 70, x: 45},
-          {y: 10, x: 30},
-          {y: 65, x: 15},
-          {y: 85, x: 20}
-        ],
-        block_size: 50,
-        arena_width: 750,
-        arena_height: 500,
-        post_trial_gap:1500
+        blocks: corsi_original_config,
+        post_trial_gap: wm_span_spatial_post_sequence_blank_duration
       }
     ],
     timeline_variables: [
@@ -1332,45 +1262,19 @@
         type: 'corsi',
         mode: 'display',
         sequence: jsPsych.timelineVariable('sequence'),
-        blocks: [
-          {y: 25, x: 25},
-          {y: 30, x: 50},
-          {y: 80, x: 85},
-          {y: 40, x: 70},
-          {y: 55, x: 65},
-          {y: 70, x: 45},
-          {y: 10, x: 30},
-          {y: 65, x: 15},
-          {y: 85, x: 20}
-        ],
-        block_size: 50,
-        arena_width: 750,
-        arena_height: 500,
-        sequence_duration: 1000,
-        sequence_iti: 500,
-        pre_stim_duration: 1500,
-        post_trial_gap: 1500
+        blocks: corsi_original_config,
+        sequence_duration: wm_span_spatial_block_duration,
+        sequence_iti: wm_span_spatial_block_gap_duration,
+        pre_stim_duration: wm_span_spatial_pre_sequence_duration,
+        post_trial_gap: wm_span_spatial_post_sequence_blank_duration
       },
       load_task_odd_right,
       {
         type: 'corsi',
         mode: 'input',
         sequence: jsPsych.timelineVariable('sequence'),
-        blocks: [
-          {y: 25, x: 25},
-          {y: 30, x: 50},
-          {y: 80, x: 85},
-          {y: 40, x: 70},
-          {y: 55, x: 65},
-          {y: 70, x: 45},
-          {y: 10, x: 30},
-          {y: 65, x: 15},
-          {y: 85, x: 20}
-        ],
-        block_size: 50,
-        arena_width: 750,
-        arena_height: 500,
-        post_trial_gap:1500
+        blocks: corsi_original_config,
+        post_trial_gap: wm_span_spatial_post_sequence_blank_duration
       }
     ],
     timeline_variables: [
@@ -1391,13 +1295,10 @@
           return jsPsych.randomization.sampleWithoutReplacement([0,1,2,3,4,5,6,7,8], phase_3_span);
         },
         blocks: jsPsych.timelineVariable('blocks'),
-        block_size: 50,
-        arena_width: 750,
-        arena_height: 500,
-        sequence_duration: 1000,
-        sequence_iti: 500,
-        pre_stim_duration: 1500,
-        post_trial_gap: 1500
+        sequence_duration: wm_span_spatial_block_duration,
+        sequence_iti: wm_span_spatial_block_gap_duration,
+        pre_stim_duration: wm_span_spatial_pre_sequence_duration,
+        post_trial_gap: wm_span_spatial_post_sequence_blank_duration
       },
       load_task_odd_left,
       {
@@ -1407,10 +1308,7 @@
           return JSON.parse(jsPsych.data.get().filter({trial_type: 'corsi'}).last(1).values()[0].sequence);
         },
         blocks: jsPsych.timelineVariable('blocks'),
-        block_size: 50,
-        arena_width: 750,
-        arena_height: 500,
-        post_trial_gap:1500
+        post_trial_gap:wm_span_spatial_post_sequence_blank_duration
       }
     ],
     timeline_variables: [
@@ -1437,13 +1335,10 @@
           return jsPsych.randomization.sampleWithoutReplacement([0,1,2,3,4,5,6,7,8], phase_3_span);
         },
         blocks: jsPsych.timelineVariable('blocks'),
-        block_size: 50,
-        arena_width: 750,
-        arena_height: 500,
-        sequence_duration: 1000,
-        sequence_iti: 500,
-        pre_stim_duration: 1500,
-        post_trial_gap: 1500
+        sequence_duration: wm_span_spatial_block_duration,
+        sequence_iti: wm_span_spatial_block_gap_duration,
+        pre_stim_duration: wm_span_spatial_pre_sequence_duration,
+        post_trial_gap: wm_span_spatial_post_sequence_blank_duration
       },
       load_task_odd_right,
       {
@@ -1453,10 +1348,7 @@
           return JSON.parse(jsPsych.data.get().filter({trial_type: 'corsi'}).last(1).values()[0].sequence);
         },
         blocks: jsPsych.timelineVariable('blocks'),
-        block_size: 50,
-        arena_width: 750,
-        arena_height: 500,
-        post_trial_gap:1500
+        post_trial_gap:wm_span_spatial_post_sequence_blank_duration
       }
     ],
     timeline_variables: [
