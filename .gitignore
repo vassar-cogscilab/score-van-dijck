@@ -34,3 +34,6 @@ vignettes/*.pdf
 
 # Shiny token, see https://shiny.rstudio.com/articles/shinyapps.html
 rsconnect/
+
+# db config for saving experiment data (contains passwords)
+experiment/php/database_config.php
