@@ -25,15 +25,27 @@
   var phase_3_span = 4; // set to undefined for real experiment, can set here to debug
   var odd_left_first = jsPsych.randomization.sampleWithoutReplacement([true, false], 1)[0];
 
-  var run_phase_1 = true;
-  var run_phase_2 = true;
-  var run_phase_3 = true;
-
   jsPsych.data.addProperties({
     subject_id: subject_id,
     odd_left_first: odd_left_first,
     wm_type: wm_type
   });
+
+  // #region experiment parameters //
+  var run_phase_1 = true;
+  var run_phase_2 = true;
+  var run_phase_3 = true;
+
+  var parity_fixation_duration = 500
+  var parity_feedback_fixation_duration = 250
+  var parity_blank_duration = 250
+
+  var parity_error_text_duration = 3000
+  var parity_error_text_blank_duration = 1000
+
+  // #endregion //
+
+  
 
   var timeline = [];
 
@@ -102,7 +114,7 @@
       {
         type: 'html-keyboard-response',
         stimulus: '<p>+</p>',
-        trial_duration: 500,
+        trial_duration: parity_fixation_duration,
         choices: jsPsych.NO_KEYS
       },
       {
@@ -127,9 +139,9 @@
             return '<p style="color: red;">+</p>';
           }
         },
-        trial_duration: 250,
+        trial_duration: parity_feedback_fixation_duration,
         choices: jsPsych.NO_KEYS,
-        post_trial_gap: 250
+        post_trial_gap: parity_blank_duration
       },
       {
         timeline: [
@@ -137,8 +149,8 @@
             type: 'html-keyboard-response',
             stimulus: '<div class="instructions"><p>Press A if the digit is ODD.</p><p>Press L if the digit is EVEN.</p></div>',
             choices: jsPsych.NO_KEYS,
-            trial_duration: 3000,
-            post_trial_gap: 1000
+            trial_duration: parity_error_text_duration,
+            post_trial_gap: parity_error_text_blank_duration
           }
         ],
         conditional_function: function(){
@@ -168,7 +180,7 @@
       {
         type: 'html-keyboard-response',
         stimulus: '<p>+</p>',
-        trial_duration: 500,
+        trial_duration: parity_fixation_duration,
         choices: jsPsych.NO_KEYS
       },
       {
@@ -193,9 +205,9 @@
             return '<p style="color: red;">+</p>';
           }
         },
-        trial_duration: 250,
+        trial_duration: parity_feedback_fixation_duration,
         choices: jsPsych.NO_KEYS,
-        post_trial_gap: 250
+        post_trial_gap: parity_blank_duration
       },
       {
         timeline: [
@@ -203,8 +215,8 @@
             type: 'html-keyboard-response',
             stimulus: '<div class="instructions"><p>Press A if the digit is EVEN.</p><p>Press L if the digit is ODD.</p></div>',
             choices: jsPsych.NO_KEYS,
-            trial_duration: 3000,
-            post_trial_gap: 1000
+            trial_duration: parity_error_text_duration,
+            post_trial_gap: parity_error_text_blank_duration
           }
         ],
         conditional_function: function(){
@@ -242,7 +254,7 @@
       {
         type: 'html-keyboard-response',
         stimulus: '<p>+</p>',
-        trial_duration: 500,
+        trial_duration: parity_fixation_duration,
         choices: jsPsych.NO_KEYS
       },
       {
@@ -267,9 +279,9 @@
             return '<p style="color: red;">+</p>';
           }
         },
-        trial_duration: 250,
+        trial_duration: parity_feedback_fixation_duration,
         choices: jsPsych.NO_KEYS,
-        post_trial_gap: 250
+        post_trial_gap: parity_blank_duration
       }
     ],
     timeline_variables: [
@@ -294,7 +306,7 @@
       {
         type: 'html-keyboard-response',
         stimulus: '<p>+</p>',
-        trial_duration: 500,
+        trial_duration: parity_fixation_duration,
         choices: jsPsych.NO_KEYS
       },
       {
@@ -319,9 +331,9 @@
             return '<p style="color: red;">+</p>';
           }
         },
-        trial_duration: 250,
+        trial_duration: parity_feedback_fixation_duration,
         choices: jsPsych.NO_KEYS,
-        post_trial_gap: 250
+        post_trial_gap: parity_blank_duration
       }
     ],
     timeline_variables: [
