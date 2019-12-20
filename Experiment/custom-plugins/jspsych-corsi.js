@@ -16,6 +16,11 @@ jsPsych.plugins["corsi"] = (function() {
     name: 'corsi',
     description: '',
     parameters: {
+      sequence: {
+        type: jsPsych.plugins.parameterType.INT,
+        default: undefined,
+        array: true
+      }
     }
   }
 
@@ -27,6 +32,8 @@ jsPsych.plugins["corsi"] = (function() {
     if(trial.mode == 'input'){
       css += '.jspsych-corsi-block { cursor: pointer; }';
     }
+    css += '#jspsych-corsi-prompt { position: absolute; text-align: center; width: '+trial.arena_width+'px; top: 100%; }';
+    css += '#jspsych-corsi-prompt p { font-size: 18px; }';
     css += '</style>';
 
     // display stimulus
@@ -37,11 +44,15 @@ jsPsych.plugins["corsi"] = (function() {
       html += '<div class="jspsych-corsi-block" data-id="'+i+'" style="position: absolute; top:calc('+trial.blocks[i].y+'% - '+trial.block_size/2+'px); left:calc('+trial.blocks[i].x+'% - '+trial.block_size/2+'px);"></div>';
     }
     
+    if(trial.prompt != null){
+      html += '<div id="jspsych-corsi-prompt"><p>'+trial.prompt+'</p></div>';
+    }
     html += '</div>';
 
     display_element.innerHTML = html;
 
     var trial_data = {
+      sequence: JSON.stringify(trial.sequence),
       response: []
     }
 
@@ -108,7 +119,7 @@ jsPsych.plugins["corsi"] = (function() {
       }
 
       var register_click = function(id){
-        if(typeof trial.data.correct == 'undefined'){
+        if(typeof trial.data.correct != 'undefined'){
           return; // extra click during timeout, do nothing
         }
         trial_data.response.push(id);

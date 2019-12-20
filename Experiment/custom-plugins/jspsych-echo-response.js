@@ -16,6 +16,11 @@ jsPsych.plugins["echo-response"] = (function() {
     name: 'echo-response',
     description: '',
     parameters: {
+      sequence: {
+        type: jsPsych.plugins.parameterType.STRING,
+        array: true,
+        default: undefined
+      }
     }
   }
 
@@ -31,7 +36,8 @@ jsPsych.plugins["echo-response"] = (function() {
     display_element.innerHTML = html;
 
     var trial_data = {
-      response: []
+      response: [],
+      sequence: JSON.stringify(trial.sequence)
     }
 
     var on_response = function(info){
@@ -85,6 +91,8 @@ jsPsych.plugins["echo-response"] = (function() {
     });
 
     var end_trial = function(){
+      trial_data.response = JSON.stringify(trial_data.response);
+
       jsPsych.pluginAPI.cancelAllKeyboardResponses();
 
       display_element.innerHTML = "";
