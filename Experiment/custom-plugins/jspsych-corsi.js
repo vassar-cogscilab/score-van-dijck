@@ -53,11 +53,11 @@ jsPsych.plugins["corsi"] = (function() {
 
     var trial_data = {
       sequence: JSON.stringify(trial.sequence),
-      response: []
+      response: [],
+      blocks: JSON.stringify(trial.blocks)
     }
 
     if(trial.mode == 'display'){
-      var start = performance.now();
       var sequence_location = 0;
       var display_phase = 'pre-stim';
 

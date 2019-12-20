@@ -19,9 +19,15 @@
   </body>
   <script>
 
+  var subject_id = jsPsych.randomization.randomID(20);
+
   var wm_type = 'verbal'; // 'verbal' or 'spatial'
   var phase_3_span = 4; // set to undefined for real experiment, can set here to debug
   var odd_left_first = jsPsych.randomization.sampleWithoutReplacement([true, false], 1)[0];
+
+  var run_phase_1 = true;
+  var run_phase_2 = true;
+  var run_phase_3 = true;
 
   var timeline = [];
 
@@ -344,33 +350,33 @@
   }
 
   /* add baseline to timeline */
-  /* 
-  timeline.push(baseline_intro_instructions);
-  if(odd_left_first){
-    timeline.push(baseline_task_odd_left_instructions);
-    timeline.push(baseline_practice_odd_left);
-    timeline.push(baseline_continue);
-    timeline.push(baseline_task_odd_left);
-  } else {
-    timeline.push(baseline_task_odd_right_instructions);
-    timeline.push(baseline_practice_odd_right);
-    timeline.push(baseline_continue);
-    timeline.push(baseline_task_odd_right);
+  if(run_phase_1){
+    timeline.push(baseline_intro_instructions);
+    if(odd_left_first){
+      timeline.push(baseline_task_odd_left_instructions);
+      timeline.push(baseline_practice_odd_left);
+      timeline.push(baseline_continue);
+      timeline.push(baseline_task_odd_left);
+    } else {
+      timeline.push(baseline_task_odd_right_instructions);
+      timeline.push(baseline_practice_odd_right);
+      timeline.push(baseline_continue);
+      timeline.push(baseline_task_odd_right);
+    }
+    timeline.push(baseline_switch_instructions);
+    if(!odd_left_first){
+      timeline.push(baseline_task_odd_left_instructions);
+      timeline.push(baseline_practice_odd_left);
+      timeline.push(baseline_continue);
+      timeline.push(baseline_task_odd_left);
+    } else {
+      timeline.push(baseline_task_odd_right_instructions);
+      timeline.push(baseline_practice_odd_right);
+      timeline.push(baseline_continue);
+      timeline.push(baseline_task_odd_right);
+    }
+    timeline.push(baseline_end);
   }
-  timeline.push(baseline_switch_instructions);
-  if(!odd_left_first){
-    timeline.push(baseline_task_odd_left_instructions);
-    timeline.push(baseline_practice_odd_left);
-    timeline.push(baseline_continue);
-    timeline.push(baseline_task_odd_left);
-  } else {
-    timeline.push(baseline_task_odd_right_instructions);
-    timeline.push(baseline_practice_odd_right);
-    timeline.push(baseline_continue);
-    timeline.push(baseline_task_odd_right);
-  }
-  timeline.push(baseline_end);
-  */
 
   //#endregion
 
@@ -761,20 +767,22 @@
     choices: ['c']
   }
 
-  /*if(wm_type == 'verbal'){
-    timeline.push(wm_instructions_verbal);
-    timeline.push(wm_span_verbal_practice);
-    timeline.push(wm_instructions_verbal_2);
-    timeline.push(wm_span_verbal);
+  if(run_phase_2){
+    if(wm_type == 'verbal'){
+      timeline.push(wm_instructions_verbal);
+      timeline.push(wm_span_verbal_practice);
+      timeline.push(wm_instructions_verbal_2);
+      timeline.push(wm_span_verbal);
+    }
+    if(wm_type == 'spatial'){
+      timeline.push(wm_instructions_spatial);
+      timeline.push(wm_span_spatial_practice);
+      timeline.push(wm_instructions_spatial_2);
+      timeline.push(wm_span_spatial);
+    }
+    timeline.push(span_calculation);
+    timeline.push(wm_span_end);
   }
-  if(wm_type == 'spatial'){
-    timeline.push(wm_instructions_spatial);
-    timeline.push(wm_span_spatial_practice);
-    timeline.push(wm_instructions_spatial_2);
-    timeline.push(wm_span_spatial);
-  }
-  timeline.push(span_calculation);
-  timeline.push(wm_span_end);*/
 
   //#endregion 
   
@@ -1448,31 +1456,34 @@
     repetitions: 2
   }
 
-  timeline.push(load_instructions)
-  if(wm_type == 'verbal'){
-    timeline.push(load_instructions_verbal);
-    odd_left_first ? timeline.push(load_instructions_left) : timeline.push(load_instructions_right);
-    odd_left_first ? timeline.push(load_verbal_practice_left) : timeline.push(load_verbal_practice_right);
-    timeline.push(load_instructions_post_practice);
-    odd_left_first ? timeline.push(load_verbal_left) : timeline.push(load_verbal_right);
-    timeline.push(load_instructions_switch);
-    odd_left_first ? timeline.push(load_instructions_right) : timeline.push(load_instructions_left);
-    odd_left_first ? timeline.push(load_verbal_practice_right) : timeline.push(load_verbal_practice_left);
-    timeline.push(load_instructions_post_practice);
-    odd_left_first ? timeline.push(load_verbal_right) : timeline.push(load_verbal_left);
+  if(run_phase_3){
+    timeline.push(load_instructions)
+    if(wm_type == 'verbal'){
+      timeline.push(load_instructions_verbal);
+      odd_left_first ? timeline.push(load_instructions_left) : timeline.push(load_instructions_right);
+      odd_left_first ? timeline.push(load_verbal_practice_left) : timeline.push(load_verbal_practice_right);
+      timeline.push(load_instructions_post_practice);
+      odd_left_first ? timeline.push(load_verbal_left) : timeline.push(load_verbal_right);
+      timeline.push(load_instructions_switch);
+      odd_left_first ? timeline.push(load_instructions_right) : timeline.push(load_instructions_left);
+      odd_left_first ? timeline.push(load_verbal_practice_right) : timeline.push(load_verbal_practice_left);
+      timeline.push(load_instructions_post_practice);
+      odd_left_first ? timeline.push(load_verbal_right) : timeline.push(load_verbal_left);
+    }
+    if(wm_type == 'spatial'){
+      timeline.push(load_instructions_spatial);
+      odd_left_first ? timeline.push(load_instructions_left) : timeline.push(load_instructions_right);
+      odd_left_first ? timeline.push(load_spatial_practice_left) : timeline.push(load_spatial_practice_right);
+      timeline.push(load_instructions_post_practice);
+      odd_left_first ? timeline.push(load_spatial_left) : timeline.push(load_spatial_right);
+      timeline.push(load_instructions_switch);
+      odd_left_first ? timeline.push(load_instructions_right) : timeline.push(load_instructions_left);
+      odd_left_first ? timeline.push(load_spatial_practice_right) : timeline.push(load_spatial_practice_left);
+      timeline.push(load_instructions_post_practice);
+      odd_left_first ? timeline.push(load_spatial_right) : timeline.push(load_spatial_left);
+    }
   }
-  if(wm_type == 'spatial'){
-    timeline.push(load_instructions_spatial);
-    odd_left_first ? timeline.push(load_instructions_left) : timeline.push(load_instructions_right);
-    odd_left_first ? timeline.push(load_spatial_practice_left) : timeline.push(load_spatial_practice_right);
-    timeline.push(load_instructions_post_practice);
-    odd_left_first ? timeline.push(load_spatial_left) : timeline.push(load_spatial_right);
-    timeline.push(load_instructions_switch);
-    odd_left_first ? timeline.push(load_instructions_right) : timeline.push(load_instructions_left);
-    odd_left_first ? timeline.push(load_spatial_practice_right) : timeline.push(load_spatial_practice_left);
-    timeline.push(load_instructions_post_practice);
-    odd_left_first ? timeline.push(load_spatial_right) : timeline.push(load_spatial_left);
-  }
+  
 
   //#endregion
 
@@ -1496,8 +1507,8 @@
 
   timeline.push(save_data);
   timeline.push(debrief);
-
   //#endregion
+
   jsPsych.init({
     timeline: timeline
   })
