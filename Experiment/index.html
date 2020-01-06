@@ -23,7 +23,7 @@
 
   var subject_id = jsPsych.randomization.randomID(20);
 
-  var wm_type = 'verbal'; // 'verbal' or 'spatial'
+  var wm_type = jsPsych.randomization.sampleWithoutReplacement(['verbal', 'spatial'], 1)[0]; // 'verbal' or 'spatial'
   var phase_3_span = 4; // set to undefined for real experiment, can set here to debug
   var odd_left_first = jsPsych.randomization.sampleWithoutReplacement([true, false], 1)[0];
 
