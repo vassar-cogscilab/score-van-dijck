@@ -156,7 +156,7 @@ jsPsych.plugins["corsi"] = (function() {
 
     var end_trial = function(){
       display_element.innerHTML = "";
-
+      trial_data.response = JSON.stringify(trial_data.response);
       jsPsych.finishTrial(trial_data);
     }
     
