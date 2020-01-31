@@ -1425,7 +1425,7 @@
   var save_data = {
     type: 'call-function',
     func: function(){
-      var data = jsPsych.data.get().json();
+      var data = jsPsych.data.get().values();
       serverComm.save_data(data);
     }
   }
