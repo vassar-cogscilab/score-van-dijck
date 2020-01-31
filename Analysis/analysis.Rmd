@@ -77,15 +77,41 @@ filtered.parity.data %>%
 
 ## Working memory performance in phase 3
 
+What percentage of memory items were correctly recalled in each condition?
+
 ```{r}
 mem.phase.3 <- all.parity.data %>%
   filter(phase=="dual") %>%
   group_by(subject, wmtask, block, odd) %>%
   summarize(mem.correct = all(mem.correct)) %>%
   group_by(subject, wmtask) %>%
-  summarize(n.correct = sum(mem.correct))
+  summarize(n.correct = sum(mem.correct)) %>%
+  mutate(percent.correct = (n.correct / 24)*100)
 
+mem.phase.3.summary <- mem.phase.3 %>%
+  group_by(wmtask) %>%
+  summarize(mean.percent.correct = mean(percent.correct), sd = sd(percent.correct))
+
+mem.phase.3.summary
+```
+
+Is there a statisically significant difference between recall for different WM types?
+(Original paper found that the verbal load was easier, with 95% correctly recalled vs. 76% in the spatial).
+
+```{r}
 t.test(n.correct ~ wmtask, data=mem.phase.3, var.equal=T)
+```
+
+Is there a tradeoff between WM performance and parity judgment performance in phase 3? (e.g., people who correctly recall more sequences are slower at correct parity judgments)
+
+```{r}
+tradeoff.phase.3 <- all.parity.data %>%
+  filter(phase=="dual", correct==T) %>%
+  group_by(subject, wmtask, block, odd) %>%
+  summarize(mem.correct = all(mem.correct), median.rt=median(rt))
+
+# calc median rt and merge to summary data above...
+
 ```
 
 ## Parity judgment analysis
