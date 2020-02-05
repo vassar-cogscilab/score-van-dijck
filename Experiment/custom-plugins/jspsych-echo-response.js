@@ -84,7 +84,7 @@ jsPsych.plugins["echo-response"] = (function() {
 
     var keyboardListener = jsPsych.pluginAPI.getKeyboardResponse({
       callback_function: on_response,
-      valid_responses: jsPsych.ALL_KEYS,
+      valid_responses: ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'],
       rt_method: 'performance',
       persist: true,
       allow_held_key: false
