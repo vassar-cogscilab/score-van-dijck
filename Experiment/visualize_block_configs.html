@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="jspsych-6.1.0/jspsych.js"></script>
+    <script src="custom-plugins/jspsych-corsi.js"></script>
+    <script src="js/corsi_block_config.js"></script>
+    <link rel="stylesheet" type="text/css" href="jspsych-6.1.0/css/jspsych.css">
+    <style>
+    p { font-size: 72px; }
+    .instructions { width: 750px; }
+    .instructions p { font-size: 18px; }
+    </style>
+  </head>
+  <body>
+  </body>
+  <script>
+    var timeline = [
+      {
+        type: 'corsi',
+        mode: 'display',
+        sequence: [0,1],
+        blocks: corsi_configs[0],
+        sequence_duration: 500,
+        sequence_iti: 500,
+        pre_stim_duration: 500,
+        post_trial_gap: 500
+      },
+      {
+        type: 'corsi',
+        mode: 'display',
+        sequence: [0,1],
+        blocks: corsi_configs[1],
+        sequence_duration: 500,
+        sequence_iti: 500,
+        pre_stim_duration: 500,
+        post_trial_gap: 500
+      },
+      {
+        type: 'corsi',
+        mode: 'display',
+        sequence: [0,1],
+        blocks: corsi_configs[2],
+        sequence_duration: 500,
+        sequence_iti: 500,
+        pre_stim_duration: 500,
+        post_trial_gap: 500
+      },
+      {
+        type: 'corsi',
+        mode: 'display',
+        sequence: [0,1],
+        blocks: corsi_configs[3],
+        sequence_duration: 500,
+        sequence_iti: 500,
+        pre_stim_duration: 500,
+        post_trial_gap: 500
+      },
+      {
+        type: 'corsi',
+        mode: 'display',
+        sequence: [0,1],
+        blocks: corsi_configs[4],
+        sequence_duration: 500,
+        sequence_iti: 500,
+        pre_stim_duration: 500,
+        post_trial_gap: 500
+      },
+      {
+        type: 'corsi',
+        mode: 'display',
+        sequence: [0,1],
+        blocks: corsi_configs[5],
+        sequence_duration: 500,
+        sequence_iti: 500,
+        pre_stim_duration: 500,
+        post_trial_gap: 500
+      }
+    ]
+
+    jsPsych.init({timeline})
+  </script>
+</html>
+
