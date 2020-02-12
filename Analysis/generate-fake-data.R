@@ -4,7 +4,7 @@ library(dplyr)
 
 set.seed(12604)
 
-n.subjects <- 80
+n.subjects <- 185
 
 all.data <- NA
 

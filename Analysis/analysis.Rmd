@@ -99,22 +99,36 @@ Is there a statisically significant difference between recall for different WM t
 (Original paper found that the verbal load was easier, with 95% correctly recalled vs. 76% in the spatial).
 
 ```{r}
-t.test(n.correct ~ wmtask, data=mem.phase.3, var.equal=T)
+t.test(n.correct ~ wmtask, data=mem.phase.3)
 ```
 
-Is there a tradeoff between WM performance and parity judgment performance in phase 3? (e.g., people who correctly recall more sequences are slower at correct parity judgments)
+Is there evidence of a tradeoff between WM performance and parity judgment performance in phase 3? (e.g., people who correctly recall more sequences are slower at correct parity judgments)
 
 ```{r}
 tradeoff.phase.3 <- all.parity.data %>%
   filter(phase=="dual", correct==T) %>%
-  group_by(subject, wmtask, block, odd) %>%
-  summarize(mem.correct = all(mem.correct), median.rt=median(rt))
+  group_by(subject, wmtask) %>%
+  summarize(median.rt=median(rt)) %>%
+  left_join(mem.phase.3)
 
-# calc median rt and merge to summary data above...
+ggplot(tradeoff.phase.3, aes(x=percent.correct, y=median.rt))+
+  geom_point()+
+  facet_wrap(.~wmtask)+
+  geom_smooth(method="lm", se=F)+
+  theme_bw()
+```
 
+```{r}
+cor.test(~ median.rt + percent.correct, data=(tradeoff.phase.3 %>% filter(wmtask=="spatial")))
+```
+
+```{r}
+cor.test(~ median.rt + percent.correct, data=(tradeoff.phase.3 %>% filter(wmtask=="verbal")))
 ```
 
 ## Parity judgment analysis
+
+### Calculating SNARC-effect measure
 
 Calculate the `dRT` for each digit, in each phase, for each subject. `dRT` is the difference in median RT for correct responses when the correct response is on the right versus on the left.
 
@@ -143,7 +157,7 @@ lm.result <- summary.drt %>%
   unnest()
 ```
 
-Calculate overall RT diff from baseline to dual load and merge into lm.result data.
+Calculate overall RT diff from baseline to dual load and merge into `lm.result` data.
 
 ```{r}
 covariate.diff <- filtered.parity.data %>%
@@ -162,7 +176,11 @@ lm.result$phase <- factor(lm.result$phase)
 lm.result$wmtask <- factor(lm.result$wmtask)
 ```
 
-Fit ANCOVA model to data. Goal is to predict coefficients from the linear model. WM Task type (verbal v. spatial) is a between-subjects factor. Phase (baseline v. dual-task) is a within-subjects factor. Overall RT difference between phases is a within-subjects covariate.
+### Focal test for SCORE H*
+
+Fit ANCOVA model to data. Goal is to predict coefficients from the linear model. WM Task type (verbal v. spatial) is a between-subjects factor. Phase (baseline v. dual-task) is a within-subjects factor. Overall RT difference between phases is a between-subjects covariate.
+
+The key test here is whether the interaction between WM task and phase is significant.
 
 ```{r message=FALSE, warning=FALSE}
 anova.model <- ezANOVA(lm.result, dv = dRT.coefficient, between = wmtask, within = phase, between_covariates = phase.diff, wid = subject)
@@ -170,7 +188,7 @@ anova.model <- ezANOVA(lm.result, dv = dRT.coefficient, between = wmtask, within
 anova.model$ANOVA
 ```
 
-Generate Fig. 1 from the target paper.
+Generate analogue of Fig. 1 from the target paper.
 
 ```{r}
 
@@ -182,6 +200,35 @@ ggplot(plotting.data, aes(x=wmtask, y=mean.coefficient, ymin=mean.coefficient - 
   geom_hline(yintercept = 0)+
   geom_pointrange(position = position_dodge2(width=0.5)) +
   labs(x="Working Memory Task", y="Average Regression Weights", color="Phase")+
+  scale_y_reverse()+
   theme_bw() +
   theme(panel.grid = element_blank())
 ```
+
+### Follow-up analyses
+
+1. Is there a significant SNARC-effect in the baseline condition? Original paper found a significant effect.
+
+```{r}
+baseline.effect <- lm.result %>% filter(phase=="baseline")
+t.test(baseline.effect$dRT.coefficient, alternative="less")
+```
+
+2. Is there a significant SNARC-effect in the spatial-dual condition? Original paper found a significant effect.
+
+```{r}
+spatial.effect <- lm.result %>% filter(phase=="dual", wmtask=="spatial")
+t.test(spatial.effect$dRT.coefficient, alternative="less")
+```
+
+
+3. Is there no SNARC-effect in the verbal-dual condition? Original paper did not find a significant effect. Here we use an equivalence test to examine the evidence that the SNARC-effect in this condition is no larger than +/-1.5.
+
+```{r}
+library(TOSTER)
+verbal.effect <- lm.result %>% filter(phase=="dual", wmtask=="verbal") %>%
+  summarize(m=mean(dRT.coefficient),sd=sd(dRT.coefficient),n=n())
+
+TOSTER::TOSTone.raw(verbal.effect$m, mu=0, sd=verbal.effect$sd, n=verbal.effect$n,low_eqbound = -1.5,high_eqbound = 1.5, alpha=0.05, verbose=F)
+```
+
