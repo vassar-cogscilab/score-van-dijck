@@ -41,10 +41,10 @@ jsPsych.plugins["echo-response"] = (function() {
     }
 
     var on_response = function(info){
-      var character = jsPsych.pluginAPI.convertKeyCodeToKeyCharacter(info.key);
+      var character = jsPsych.pluginAPI.convertKeyCodeToKeyCharacter(info.key).toUpperCase();
       trial_data.response.push(character);
 
-      var correct = character == trial.sequence[trial_data.response.length - 1];
+      var correct = character.toUpperCase() == trial.sequence[trial_data.response.length - 1].toUpperCase();
       var to_insert = '<span class="response-echo" style="padding: 0 .25em;">'+character+'</span>';
 
       display_element.querySelector('#jspsych-echo-response-box').insertAdjacentHTML('beforeend', to_insert);
