@@ -1,0 +1,1452 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="jspsych-6.1.0/jspsych.js"></script>
+    <script src="jspsych-6.1.0/plugins/jspsych-html-keyboard-response.js"></script>
+    <script src="jspsych-6.1.0/plugins/jspsych-call-function.js"></script>
+    <script src="jspsych-6.1.0/plugins/jspsych-survey-text.js"></script>
+    <script src="custom-plugins/jspsych-echo-response.js"></script>
+    <script src="custom-plugins/jspsych-corsi.js"></script>
+    <script src="js/sequence_generator.js"></script>
+    <script src="js/corsi_block_config.js"></script>
+    <script src="js/serverComm.js"></script>
+    <link rel="stylesheet" type="text/css" href="jspsych-6.1.0/css/jspsych.css">
+    <style>
+    p { font-size: 72px; }
+    .instructions { width: 750px; }
+    .instructions p { font-size: 18px; }
+    </style>
+  </head>
+  <body>
+  </body>
+  <script>
+
+  var subject_id = jsPsych.randomization.randomID(20);
+
+  var wm_type = jsPsych.randomization.sampleWithoutReplacement(['verbal', 'spatial'], 1)[0]; // 'verbal' or 'spatial'
+  var phase_3_span = 4; // set to undefined for real experiment, can set here to debug
+  var odd_left_first = jsPsych.randomization.sampleWithoutReplacement([true, false], 1)[0];
+
+  jsPsych.data.addProperties({
+    subject_id: subject_id,
+    odd_left_first: odd_left_first,
+    wm_type: wm_type
+  });
+
+  // #region experiment parameters //
+  
+  var run_phase_1 = true;
+  var run_phase_2 = true;
+  var run_phase_3 = true;
+
+  var parity_fixation_duration = 500
+  var parity_feedback_fixation_duration = 250
+  var parity_blank_duration = 250
+
+  var parity_error_text_duration = 3000
+  var parity_error_text_blank_duration = 1000
+
+  var wm_span_verbal_pre_blank_duration = 1500
+  var wm_span_verbal_letter_duration = 1250
+  var wm_span_verbal_letter_post_blank_duration = 250
+
+  var wm_span_spatial_pre_sequence_duration = 1500
+  var wm_span_spatial_block_duration = 1000
+  var wm_span_spatial_block_gap_duration = 500
+  var wm_span_spatial_post_sequence_blank_duration = 1500
+
+  var baseline_repetitions_per_digit_side = 16;
+
+  var load_repetitions_per_digit_per_trial = 2;
+
+  // #endregion //
+
+  var timeline = [];
+
+  //#region age survey
+
+  var age_survey = {
+    type: 'survey-text',
+    questions: [
+      {prompt: '<p style="font-size:18px;">What is your age?</p>'}
+    ]
+  }
+  timeline.push(age_survey);
+
+  //#endregion
+
+  //#region phase 1
+
+  var baseline_intro_instructions = {
+    type: 'html-keyboard-response',
+    stimulus: '<div class="instructions"><p>In this part of the experiment, you\'ll see a single digit in the center of the screen.</p>'+
+      '<p>Your task is to quickly determine whether the digit is ODD or EVEN.</p>'+
+      '<p>Press A or L to continue.</p></div>',
+    choices: ['a','l']
+  }
+
+  var baseline_task_odd_left_instructions = {
+    timeline: [
+      {
+        type: 'html-keyboard-response',
+        stimulus: '<div class="instructions">'+
+          '<p>If the digit is ODD (1, 3, 7, or 9), press A on the keyboard.</p>'+
+          '<p>If the digit is EVEN (2, 4, 6, or 8), press L on the keyboard.</p>'+
+          '<p>Press A or L to continue.</p></div>',
+        choices: ['a','l']
+      },
+      {
+        type: 'html-keyboard-response',
+        stimulus: '<div class="instructions"><p>If you answer incorrectly, the cross (+) in the center of the screen will turn red.</p>'+
+          '<p>Press A or L to continue.</p></div>',
+        choices: ['a','l']
+      },
+      {
+        type: 'html-keyboard-response',
+        stimulus: '<div class="instructions"><p>We will start with a few practice trials.</p>'+
+          '<p>Press A or L to begin the practice.</p></div>',
+        choices: ['a','l']
+      }
+    ]
+  }
+
+  var baseline_task_odd_right_instructions = {
+    timeline: [
+      {
+        type: 'html-keyboard-response',
+        stimulus: '<div class="instructions">'+
+          '<p>If the digit is EVEN (2, 4, 6, or 8), press A on the keyboard.</p>'+
+          '<p>If the digit is ODD (1, 3, 7, or 9), press L on the keyboard.</p>'+
+          '<p>Press A or L to continue.</p></div>',
+        choices: ['a','l']
+      },
+      {
+        type: 'html-keyboard-response',
+        stimulus: '<div class="instructions"><p>If you answer incorrectly, the cross (+) in the center of the screen will turn red.</p>'+
+          '<p>Press A or L to continue.</p></div>',
+        choices: ['a','l']
+      },
+      {
+        type: 'html-keyboard-response',
+        stimulus: '<div class="instructions"><p>We will start with a few practice trials.</p>'+
+          '<p>Press A or L to begin the practice.</p></div>',
+        choices: ['a','l']
+      }
+    ]
+  }
+
+  var baseline_practice_odd_left = {
+    timeline: [
+      {
+        type: 'html-keyboard-response',
+        stimulus: '<p>+</p>',
+        trial_duration: parity_fixation_duration,
+        choices: jsPsych.NO_KEYS
+      },
+      {
+        type: 'html-keyboard-response',
+        stimulus: function(){ return "<p>"+jsPsych.timelineVariable('digit', true)+"</p>"},
+        choices: ['a', 'l'],
+        data: {
+          correct_response: jsPsych.timelineVariable('target_response'),
+          parity: jsPsych.timelineVariable('parity'),
+          task: 'parity'
+        },
+        on_finish: function(data){
+          data.correct = data.correct_response == jsPsych.pluginAPI.convertKeyCodeToKeyCharacter(data.key_press);
+        }
+      },
+      {
+        type: 'html-keyboard-response',
+        stimulus: function(){
+          if(jsPsych.data.get().last(1).values()[0].correct){
+            return '<p>+</p>';
+          } else {
+            return '<p style="color: red;">+</p>';
+          }
+        },
+        trial_duration: parity_feedback_fixation_duration,
+        choices: jsPsych.NO_KEYS,
+        post_trial_gap: parity_blank_duration
+      },
+      {
+        timeline: [
+          {
+            type: 'html-keyboard-response',
+            stimulus: '<div class="instructions"><p>Press A if the digit is ODD.</p><p>Press L if the digit is EVEN.</p></div>',
+            choices: jsPsych.NO_KEYS,
+            trial_duration: parity_error_text_duration,
+            post_trial_gap: parity_error_text_blank_duration
+          }
+        ],
+        conditional_function: function(){
+          var was_correct = jsPsych.data.get().last(2).values()[0].correct;
+          return !was_correct;
+        }
+      }
+    ],
+    data: {
+      phase: 'baseline-practice'
+    },
+    timeline_variables: [
+      {digit: 1, parity: 'odd', target_response: 'a'},
+      {digit: 2, parity: 'even', target_response: 'l'},
+      {digit: 3, parity: 'odd', target_response: 'a'},
+      {digit: 4, parity: 'even', target_response: 'l'},
+      {digit: 6, parity: 'even', target_response: 'l'},
+      {digit: 7, parity: 'odd', target_response: 'a'},
+      {digit: 8, parity: 'even', target_response: 'l'},
+      {digit: 9, parity: 'odd', target_response: 'a'},
+    ],
+    randomize_order: true
+  }
+
+  var baseline_practice_odd_right = {
+    timeline: [
+      {
+        type: 'html-keyboard-response',
+        stimulus: '<p>+</p>',
+        trial_duration: parity_fixation_duration,
+        choices: jsPsych.NO_KEYS
+      },
+      {
+        type: 'html-keyboard-response',
+        stimulus: function(){ return "<p>"+jsPsych.timelineVariable('digit', true)+"</p>"},
+        choices: ['a', 'l'],
+        data: {
+          correct_response: jsPsych.timelineVariable('target_response'),
+          parity: jsPsych.timelineVariable('parity'),
+          task: 'parity'
+        },
+        on_finish: function(data){
+          data.correct = data.correct_response == jsPsych.pluginAPI.convertKeyCodeToKeyCharacter(data.key_press);
+        }
+      },
+      {
+        type: 'html-keyboard-response',
+        stimulus: function(){
+          if(jsPsych.data.get().last(1).values()[0].correct){
+            return '<p>+</p>';
+          } else {
+            return '<p style="color: red;">+</p>';
+          }
+        },
+        trial_duration: parity_feedback_fixation_duration,
+        choices: jsPsych.NO_KEYS,
+        post_trial_gap: parity_blank_duration
+      },
+      {
+        timeline: [
+          {
+            type: 'html-keyboard-response',
+            stimulus: '<div class="instructions"><p>Press A if the digit is EVEN.</p><p>Press L if the digit is ODD.</p></div>',
+            choices: jsPsych.NO_KEYS,
+            trial_duration: parity_error_text_duration,
+            post_trial_gap: parity_error_text_blank_duration
+          }
+        ],
+        conditional_function: function(){
+          var was_correct = jsPsych.data.get().last(2).values()[0].correct;
+          return !was_correct;
+        }
+      }
+    ],
+    data: {
+      phase: 'baseline-practice'
+    },
+    timeline_variables: [
+      {digit: 1, parity: 'odd', target_response: 'l'},
+      {digit: 2, parity: 'even', target_response: 'a'},
+      {digit: 3, parity: 'odd', target_response: 'l'},
+      {digit: 4, parity: 'even', target_response: 'a'},
+      {digit: 6, parity: 'even', target_response: 'a'},
+      {digit: 7, parity: 'odd', target_response: 'l'},
+      {digit: 8, parity: 'even', target_response: 'a'},
+      {digit: 9, parity: 'odd', target_response: 'l'},
+    ],
+    randomize_order: true
+  }
+
+  var baseline_continue = {
+    type: 'html-keyboard-response',
+    stimulus: '<div class="instructions"><p>That concludes the practice.</p>'+
+      '<p>There are 128 trials in this part of the experiment.</p>'+
+      '<p>When you are ready to begin, press A or L.</p>',
+    choices: ['a','l']
+  }
+
+  var baseline_task_odd_left = {
+    timeline: [
+      {
+        type: 'html-keyboard-response',
+        stimulus: '<p>+</p>',
+        trial_duration: parity_fixation_duration,
+        choices: jsPsych.NO_KEYS
+      },
+      {
+        type: 'html-keyboard-response',
+        stimulus: function(){ return "<p>"+jsPsych.timelineVariable('digit', true)+"</p>"},
+        choices: ['a', 'l'],
+        data: {
+          correct_response: jsPsych.timelineVariable('target_response'),
+          parity: jsPsych.timelineVariable('parity'),
+          task: 'parity'
+        },
+        on_finish: function(data){
+          data.correct = data.correct_response == jsPsych.pluginAPI.convertKeyCodeToKeyCharacter(data.key_press);
+        }
+      },
+      {
+        type: 'html-keyboard-response',
+        stimulus: function(){
+          if(jsPsych.data.get().last(1).values()[0].correct){
+            return '<p>+</p>';
+          } else {
+            return '<p style="color: red;">+</p>';
+          }
+        },
+        trial_duration: parity_feedback_fixation_duration,
+        choices: jsPsych.NO_KEYS,
+        post_trial_gap: parity_blank_duration
+      }
+    ],
+    timeline_variables: [
+      {digit: 1, parity: 'odd', target_response: 'a'},
+      {digit: 2, parity: 'even', target_response: 'l'},
+      {digit: 3, parity: 'odd', target_response: 'a'},
+      {digit: 4, parity: 'even', target_response: 'l'},
+      {digit: 6, parity: 'even', target_response: 'l'},
+      {digit: 7, parity: 'odd', target_response: 'a'},
+      {digit: 8, parity: 'even', target_response: 'l'},
+      {digit: 9, parity: 'odd', target_response: 'a'},
+    ],
+    data: {
+      phase: 'baseline'
+    },
+    randomize_order: true,
+    repetitions: baseline_repetitions_per_digit_side
+  }
+
+  var baseline_task_odd_right = {
+    timeline: [
+      {
+        type: 'html-keyboard-response',
+        stimulus: '<p>+</p>',
+        trial_duration: parity_fixation_duration,
+        choices: jsPsych.NO_KEYS
+      },
+      {
+        type: 'html-keyboard-response',
+        stimulus: function(){ return "<p>"+jsPsych.timelineVariable('digit', true)+"</p>"},
+        choices: ['a', 'l'],
+        data: {
+          correct_response: jsPsych.timelineVariable('target_response'),
+          parity: jsPsych.timelineVariable('parity'),
+          task: 'parity'
+        },
+        on_finish: function(data){
+          data.correct = data.correct_response == jsPsych.pluginAPI.convertKeyCodeToKeyCharacter(data.key_press);
+        }
+      },
+      {
+        type: 'html-keyboard-response',
+        stimulus: function(){
+          if(jsPsych.data.get().last(1).values()[0].correct){
+            return '<p>+</p>';
+          } else {
+            return '<p style="color: red;">+</p>';
+          }
+        },
+        trial_duration: parity_feedback_fixation_duration,
+        choices: jsPsych.NO_KEYS,
+        post_trial_gap: parity_blank_duration
+      }
+    ],
+    timeline_variables: [
+      {digit: 1, parity: 'odd', target_response: 'l'},
+      {digit: 2, parity: 'even', target_response: 'a'},
+      {digit: 3, parity: 'odd', target_response: 'l'},
+      {digit: 4, parity: 'even', target_response: 'a'},
+      {digit: 6, parity: 'even', target_response: 'a'},
+      {digit: 7, parity: 'odd', target_response: 'l'},
+      {digit: 8, parity: 'even', target_response: 'a'},
+      {digit: 9, parity: 'odd', target_response: 'l'},
+    ],
+    data: {
+      phase: 'baseline'
+    },
+    randomize_order: true,
+    repetitions: baseline_repetitions_per_digit_side
+  }
+
+  var baseline_switch_instructions = {
+    type: 'html-keyboard-response',
+    stimulus: '<div class="instructions"><p>In this next part, you\'ll do the same task but the keys are swapped.</p>'+
+      '<p>Press A or L to continue.</p>',
+    choices: ['a','l']
+  }
+
+  var baseline_end = {
+    type: 'html-keyboard-response',
+    stimulus: '<div class="instructions"><p>You have completed part 1 of the experiment!</p>'+
+      '<p>Press C to continue to part 2.</p>',
+    choices: ['c']
+  }
+
+  /* add baseline to timeline */
+  if(run_phase_1){
+    timeline.push(baseline_intro_instructions);
+    if(odd_left_first){
+      timeline.push(baseline_task_odd_left_instructions);
+      timeline.push(baseline_practice_odd_left);
+      timeline.push(baseline_continue);
+      timeline.push(baseline_task_odd_left);
+    } else {
+      timeline.push(baseline_task_odd_right_instructions);
+      timeline.push(baseline_practice_odd_right);
+      timeline.push(baseline_continue);
+      timeline.push(baseline_task_odd_right);
+    }
+    timeline.push(baseline_switch_instructions);
+    if(!odd_left_first){
+      timeline.push(baseline_task_odd_left_instructions);
+      timeline.push(baseline_practice_odd_left);
+      timeline.push(baseline_continue);
+      timeline.push(baseline_task_odd_left);
+    } else {
+      timeline.push(baseline_task_odd_right_instructions);
+      timeline.push(baseline_practice_odd_right);
+      timeline.push(baseline_continue);
+      timeline.push(baseline_task_odd_right);
+    }
+    timeline.push(baseline_end);
+  }
+
+  //#endregion
+
+  //#region phase 2
+
+  var wm_instructions_verbal = {
+    timeline: [
+      {
+        type: 'html-keyboard-response',
+        stimulus: '<div class="instructions">'+
+          '<p>In this part of the experiment you will need to memorize sequences of letters.</p>'+
+          '<p>Press C to continue</p>',
+        choices: ['c']
+      },
+      {
+        type: 'html-keyboard-response',
+        stimulus: '<div class="instructions">'+
+          '<p>The letters will be presented one at a time.</p>'+
+          '<p>The sequences will start with 3 letters and get longer. The longest have 8 letters.</p>'+
+          '<p>There will be three sequences of each length.</p>'+
+          '<p>Press C to continue</p>',
+        choices: ['c']
+      },
+      {
+        type: 'html-keyboard-response',
+        stimulus: '<div class="instructions">'+
+          '<p>We will start with one practice sequence.</p>'+
+          '<p>Press C to continue</p>',
+        choices: ['c']
+      },
+    ]
+  }
+
+  var seq_loc = 0;
+
+  var wm_span_verbal_practice = {
+    timeline: [
+      {
+        type: 'html-keyboard-response',
+        stimulus: '',
+        choices: jsPsych.NO_KEYS,
+        trial_duration: wm_span_verbal_pre_blank_duration,
+      },
+      {
+        timeline: [
+          {
+            type: 'html-keyboard-response',
+            stimulus: function(){
+              return '<p>'+jsPsych.timelineVariable('sequence',true)[seq_loc]+'</p>'
+            },
+            choices: jsPsych.NO_KEYS,
+            trial_duration: wm_span_verbal_letter_duration,
+            post_trial_gap: wm_span_verbal_letter_post_blank_duration
+          }
+        ],
+        loop_function: function(){
+          seq_loc++;
+          if(seq_loc == jsPsych.timelineVariable('sequence', true).length){
+            return false;
+          } else {
+            return true;
+          }
+        }
+      },
+      {
+        type: 'html-keyboard-response',
+        stimulus: '',
+        choices: jsPsych.NO_KEYS,
+        trial_duration: wm_span_verbal_pre_blank_duration - wm_span_verbal_letter_post_blank_duration,
+        on_finish: function(){
+          seq_loc = 0;
+        }
+      },
+      {
+        type: 'echo-response',
+        prompt: '<div class="instructions"><p>Type the sequence of letters in the same order you saw them</p></div>',
+        sequence: jsPsych.timelineVariable('sequence'),
+        echo_font_size: 48,
+        data: {
+          task: 'wm-span',
+          length: jsPsych.timelineVariable('sequence_length')
+        }
+      }
+    ],
+    data: {
+      phase: 'wm-span-practice'
+    },
+    timeline_variables: [
+      {sequence_length: 3, sequence: generate_consonant_sequence(3)}
+    ]
+  }
+
+  var wm_instructions_verbal_2 = {
+    timeline: [
+      {
+        type: 'html-keyboard-response',
+        stimulus: '<div class="instructions">'+
+          '<p>Now we will begin the real trials.</p>'+
+          '<p>Press C to continue</p>',
+        choices: ['c']
+      }
+    ]
+  }
+
+  var wm_span_verbal = {
+    timeline: [
+      {
+        type: 'html-keyboard-response',
+        stimulus: '',
+        choices: jsPsych.NO_KEYS,
+        trial_duration: wm_span_verbal_pre_blank_duration,
+      },
+      {
+        timeline: [
+          {
+            type: 'html-keyboard-response',
+            stimulus: function(){
+              return '<p>'+jsPsych.timelineVariable('sequence',true)[seq_loc]+'</p>'
+            },
+            choices: jsPsych.NO_KEYS,
+            trial_duration: wm_span_verbal_letter_duration,
+            post_trial_gap: wm_span_verbal_letter_post_blank_duration
+          }
+        ],
+        loop_function: function(){
+          seq_loc++;
+          if(seq_loc == jsPsych.timelineVariable('sequence', true).length){
+            return false;
+          } else {
+            return true;
+          }
+        }
+      },
+      {
+        type: 'html-keyboard-response',
+        stimulus: '',
+        choices: jsPsych.NO_KEYS,
+        trial_duration: wm_span_verbal_pre_blank_duration - wm_span_verbal_letter_post_blank_duration,
+        on_finish: function(){
+          seq_loc = 0;
+        }
+      },
+      {
+        type: 'echo-response',
+        prompt: '<div class="instructions"><p>Type the sequence of letters in the same order you saw them</p></div>',
+        sequence: jsPsych.timelineVariable('sequence'),
+        echo_font_size: 48,
+        data: {
+          task: 'wm-span',
+          length: jsPsych.timelineVariable('sequence_length')
+        }
+      }
+    ],
+    timeline_variables: [
+      {sequence_length: 3, sequence: generate_consonant_sequence(3)},
+      {sequence_length: 3, sequence: generate_consonant_sequence(3)},
+      {sequence_length: 3, sequence: generate_consonant_sequence(3)},
+
+      {sequence_length: 4, sequence: generate_consonant_sequence(4)},
+      {sequence_length: 4, sequence: generate_consonant_sequence(4)},
+      {sequence_length: 4, sequence: generate_consonant_sequence(4)},
+
+      {sequence_length: 5, sequence: generate_consonant_sequence(5)},
+      {sequence_length: 5, sequence: generate_consonant_sequence(5)},
+      {sequence_length: 5, sequence: generate_consonant_sequence(5)},
+
+      {sequence_length: 6, sequence: generate_consonant_sequence(6)},
+      {sequence_length: 6, sequence: generate_consonant_sequence(6)},
+      {sequence_length: 6, sequence: generate_consonant_sequence(6)},
+
+      {sequence_length: 7, sequence: generate_consonant_sequence(7)},
+      {sequence_length: 7, sequence: generate_consonant_sequence(7)},
+      {sequence_length: 7, sequence: generate_consonant_sequence(7)},
+
+      {sequence_length: 8, sequence: generate_consonant_sequence(8)},
+      {sequence_length: 8, sequence: generate_consonant_sequence(8)},
+      {sequence_length: 8, sequence: generate_consonant_sequence(8)}
+    ],
+    data: {
+      phase: 'wm-span'
+    }
+  }
+
+  var wm_instructions_spatial = {
+    timeline: [
+      {
+        type: 'html-keyboard-response',
+        stimulus: '<div class="instructions">'+
+          '<p>In this part of the experiment you will need to memorize the order that squares on the screen change color.</p>'+
+          '<p>Press C to continue</p>',
+        choices: ['c']
+      },
+      {
+        type: 'html-keyboard-response',
+        stimulus: '<div class="instructions">'+
+          '<p>The sequences will start with 3 squares and get longer. The longest have 8 squares.</p>'+
+          '<p>There will be three sequences of each length.</p>'+
+          '<p>Press C to continue</p>',
+        choices: ['c']
+      },
+      {
+        type: 'html-keyboard-response',
+        stimulus: '<div class="instructions">'+
+          '<p>We will start with one practice sequence.</p>'+
+          '<p>Press C to continue</p>',
+        choices: ['c']
+      },
+    ]
+  }
+
+  var wm_span_spatial_practice = {
+    timeline: [
+      {
+        type: 'corsi',
+        mode: 'display',
+        sequence: jsPsych.timelineVariable('sequence'),
+        blocks: corsi_original_config,
+        sequence_duration: wm_span_spatial_block_duration,
+        sequence_iti: wm_span_spatial_block_gap_duration,
+        pre_stim_duration: wm_span_spatial_pre_sequence_duration,
+        post_trial_gap: wm_span_spatial_post_sequence_blank_duration
+      },
+
+      {
+        type: 'corsi',
+        mode: 'input',
+        sequence: jsPsych.timelineVariable('sequence'),
+        blocks: corsi_original_config,
+        post_trial_gap: wm_span_spatial_post_sequence_blank_duration,
+        prompt: 'Click the squares in the correct order',
+        data: {
+          task: 'wm-span',
+          length: jsPsych.timelineVariable('sequence_length')
+        }
+      }
+    ],
+    data: {
+      phase: 'wm-span-practice'
+    },
+    timeline_variables: [
+      {sequence_length: 3, sequence: jsPsych.randomization.sampleWithoutReplacement([0,1,2,3,4,5,6,7,8], 3)}
+    ]
+  }
+
+  var wm_instructions_spatial_2 = {
+    timeline: [
+      {
+        type: 'html-keyboard-response',
+        stimulus: '<div class="instructions">'+
+          '<p>Now we will begin the real trials.</p>'+
+          '<p>Press C to continue</p>',
+        choices: ['c']
+      }
+    ]
+  }
+
+  var wm_span_spatial = {
+    timeline: [
+      {
+        type: 'corsi',
+        mode: 'display',
+        sequence: jsPsych.timelineVariable('sequence'),
+        blocks: corsi_original_config,
+        sequence_duration: wm_span_spatial_block_duration,
+        sequence_iti: wm_span_spatial_block_gap_duration,
+        pre_stim_duration: wm_span_spatial_pre_sequence_duration,
+        post_trial_gap: wm_span_spatial_post_sequence_blank_duration
+      },
+
+      {
+        type: 'corsi',
+        mode: 'input',
+        sequence: jsPsych.timelineVariable('sequence'),
+        blocks: corsi_original_config,
+        post_trial_gap: wm_span_spatial_post_sequence_blank_duration,
+        prompt: 'Click the squares in the correct order',
+        data: {
+          task: 'wm-span',
+          length: jsPsych.timelineVariable('sequence_length')
+        }
+      }
+    ],
+    timeline_variables: [
+      {sequence_length: 3, sequence: jsPsych.randomization.sampleWithoutReplacement([0,1,2,3,4,5,6,7,8], 3)},
+      {sequence_length: 3, sequence: jsPsych.randomization.sampleWithoutReplacement([0,1,2,3,4,5,6,7,8], 3)},
+      {sequence_length: 3, sequence: jsPsych.randomization.sampleWithoutReplacement([0,1,2,3,4,5,6,7,8], 3)},
+
+      {sequence_length: 4, sequence: jsPsych.randomization.sampleWithoutReplacement([0,1,2,3,4,5,6,7,8], 4)},
+      {sequence_length: 4, sequence: jsPsych.randomization.sampleWithoutReplacement([0,1,2,3,4,5,6,7,8], 4)},
+      {sequence_length: 4, sequence: jsPsych.randomization.sampleWithoutReplacement([0,1,2,3,4,5,6,7,8], 4)},
+
+      {sequence_length: 5, sequence: jsPsych.randomization.sampleWithoutReplacement([0,1,2,3,4,5,6,7,8], 5)},
+      {sequence_length: 5, sequence: jsPsych.randomization.sampleWithoutReplacement([0,1,2,3,4,5,6,7,8], 5)},
+      {sequence_length: 5, sequence: jsPsych.randomization.sampleWithoutReplacement([0,1,2,3,4,5,6,7,8], 5)},
+
+      {sequence_length: 6, sequence: jsPsych.randomization.sampleWithoutReplacement([0,1,2,3,4,5,6,7,8], 6)},
+      {sequence_length: 6, sequence: jsPsych.randomization.sampleWithoutReplacement([0,1,2,3,4,5,6,7,8], 6)},
+      {sequence_length: 6, sequence: jsPsych.randomization.sampleWithoutReplacement([0,1,2,3,4,5,6,7,8], 6)},
+
+      {sequence_length: 7, sequence: jsPsych.randomization.sampleWithoutReplacement([0,1,2,3,4,5,6,7,8], 7)},
+      {sequence_length: 7, sequence: jsPsych.randomization.sampleWithoutReplacement([0,1,2,3,4,5,6,7,8], 7)},
+      {sequence_length: 7, sequence: jsPsych.randomization.sampleWithoutReplacement([0,1,2,3,4,5,6,7,8], 7)},
+
+      {sequence_length: 8, sequence: jsPsych.randomization.sampleWithoutReplacement([0,1,2,3,4,5,6,7,8], 8)},
+      {sequence_length: 8, sequence: jsPsych.randomization.sampleWithoutReplacement([0,1,2,3,4,5,6,7,8], 8)},
+      {sequence_length: 8, sequence: jsPsych.randomization.sampleWithoutReplacement([0,1,2,3,4,5,6,7,8], 8)}
+    ],
+    data: {
+      phase: 'wm-span'
+    }
+  }
+
+  var span_calculation = {
+    type: 'call-function',
+    data: {
+      phase: 'calculate-span'
+    },
+    func: function(){
+      var span = 2;
+      for(var wmspan = 8; wmspan >= 3; wmspan--){
+        var total_correct = jsPsych.data.get().filter({phase: 'wm-span', task: 'wm-span', length: wmspan, correct: true}).count();
+        if(total_correct >= 2){
+          span = wmspan;
+          break;
+        }
+      }
+      phase_3_span = span - 1;
+      return span;
+    }
+  }
+
+  var wm_span_end = {
+    type: 'html-keyboard-response',
+    stimulus: '<div class="instructions"><p>You have completed part 2 of the experiment!</p>'+
+      '<p>Press C to continue to part 3.</p>',
+    choices: ['c']
+  }
+
+  if(run_phase_2){
+    if(wm_type == 'verbal'){
+      timeline.push(wm_instructions_verbal);
+      timeline.push(wm_span_verbal_practice);
+      timeline.push(wm_instructions_verbal_2);
+      timeline.push(wm_span_verbal);
+    }
+    if(wm_type == 'spatial'){
+      timeline.push(wm_instructions_spatial);
+      timeline.push(wm_span_spatial_practice);
+      timeline.push(wm_instructions_spatial_2);
+      timeline.push(wm_span_spatial);
+    }
+    timeline.push(span_calculation);
+    timeline.push(wm_span_end);
+  }
+
+  //#endregion 
+  
+  //#region phase 3
+
+  var load_instructions = {
+    type: 'html-keyboard-response',
+    stimulus: '<div class="instructions">'+
+      '<p>The final part of the experiment combines the memory task and the odd/even task together.</p>'+
+      '<p>Press C to continue</p>',
+    choices: ['c']
+  }
+
+  var load_instructions_verbal = {
+    type: 'html-keyboard-response',
+    stimulus: function(){
+      return '<div class="instructions">'+
+      '<p>You will see a sequence of '+phase_3_span+' letters to remember.</p>'+
+      '<p>After the sequence, you will complete 16 odd/even judgments.</p>'+
+      '<p>Once you have completed the odd/even judgments, you will be asked to recall the sequence of letters.</p>'+
+      '<p>Press C to continue</p>'
+    },
+    choices: ['c']
+  }
+
+  var load_instructions_spatial = {
+    type: 'html-keyboard-response',
+    stimulus: function(){
+      return '<div class="instructions">'+
+      '<p>You will see a sequence of '+phase_3_span+' blocks to remember.</p>'+
+      '<p>After the sequence, you will complete 16 odd/even judgments.</p>'+
+      '<p>Once you have completed the odd/even judgments, you will be asked to recall the sequence of blocks.</p>'+
+      '<p>Press C to continue</p>'
+    },
+    choices: ['c']
+  }
+
+  var load_instructions_left = {
+    timeline: [
+      {
+        type: 'html-keyboard-response',
+        stimulus: '<div class="instructions">'+
+          '<p>During the odd/even judgments:</p>'+
+          '<p>If the digit is ODD (1, 3, 7, or 9), press A on the keyboard.</p>'+
+          '<p>If the digit is EVEN (2, 4, 6, or 8), press L on the keyboard.</p>'+
+          '<p>Press A or L to continue.</p></div>',
+        choices: ['a','l']
+      },
+      {
+        type: 'html-keyboard-response',
+        stimulus: '<div class="instructions"><p>If you answer incorrectly, the cross (+) in the center of the screen will turn red.</p>'+
+          '<p>Press A or L to continue.</p></div>',
+        choices: ['a','l']
+      },
+      {
+        type: 'html-keyboard-response',
+        stimulus: '<div class="instructions">'+
+          '<p>We will start with a practice round.</p>'+
+          '<p>Press B to begin.</p>',
+        choices: ['b']
+      }
+    ]
+  }
+
+  var load_instructions_right = {
+    timeline: [
+      {
+        type: 'html-keyboard-response',
+        stimulus: '<div class="instructions">'+
+          '<p>During the odd/even judgments:</p>'+
+          '<p>If the digit is EVEN (2, 4, 6, or 8), press A on the keyboard.</p>'+
+          '<p>If the digit is ODD (1, 3, 7, or 9), press L on the keyboard.</p>'+
+          '<p>Press A or L to continue.</p></div>',
+        choices: ['a','l']
+      },
+      {
+        type: 'html-keyboard-response',
+        stimulus: '<div class="instructions"><p>If you answer incorrectly, the cross (+) in the center of the screen will turn red.</p>'+
+          '<p>Press A or L to continue.</p></div>',
+        choices: ['a','l']
+      },
+      {
+        type: 'html-keyboard-response',
+        stimulus: '<div class="instructions">'+
+          '<p>We will start with a practice round.</p>'+
+          '<p>Press B to begin.</p>',
+        choices: ['b']
+      }
+    ]
+  }
+
+  var load_instructions_post_practice = {
+    type: 'html-keyboard-response',
+    stimulus: '<div class="instructions">'+
+      '<p>You have completed the practice.</p>'+
+      '<p>There will be 12 sets of trials in this part of the experiment.</p>'+
+      '<p>Press B to begin.</p>',
+    choices: ['b']
+  }
+
+  var load_instructions_switch = {
+    type: 'html-keyboard-response',
+    stimulus: '<div class="instructions">'+
+      '<p>You have completed half of part 3.</p>'+
+      '<p>Now the response keys will switch for the odd/even task.</p>'+
+      '<p>Press C to continue</p>',
+    choices: ['c']
+  }
+
+  var load_task_odd_left = {
+    timeline: [
+      {
+        type: 'html-keyboard-response',
+        stimulus: '<p>+</p>',
+        trial_duration: parity_fixation_duration,
+        choices: jsPsych.NO_KEYS
+      },
+      {
+        type: 'html-keyboard-response',
+        stimulus: function(){ return "<p>"+jsPsych.timelineVariable('digit', true)+"</p>"},
+        choices: ['a', 'l'],
+        data: {
+          correct_response: jsPsych.timelineVariable('target_response'),
+          parity: jsPsych.timelineVariable('parity'),
+          task: 'parity'
+        },
+        on_finish: function(data){
+          data.correct = data.correct_response == jsPsych.pluginAPI.convertKeyCodeToKeyCharacter(data.key_press);
+        }
+      },
+      {
+        type: 'html-keyboard-response',
+        stimulus: function(){
+          if(jsPsych.data.get().last(1).values()[0].correct){
+            return '<p>+</p>';
+          } else {
+            return '<p style="color: red;">+</p>';
+          }
+        },
+        trial_duration: parity_feedback_fixation_duration,
+        choices: jsPsych.NO_KEYS,
+        post_trial_gap: parity_blank_duration
+      }
+    ],
+    timeline_variables: [
+      {digit: 1, parity: 'odd', target_response: 'a'},
+      {digit: 2, parity: 'even', target_response: 'l'},
+      {digit: 3, parity: 'odd', target_response: 'a'},
+      {digit: 4, parity: 'even', target_response: 'l'},
+      {digit: 6, parity: 'even', target_response: 'l'},
+      {digit: 7, parity: 'odd', target_response: 'a'},
+      {digit: 8, parity: 'even', target_response: 'l'},
+      {digit: 9, parity: 'odd', target_response: 'a'},
+    ],
+    randomize_order: true,
+    repetitions: load_repetitions_per_digit_per_trial
+  }
+
+  var load_task_odd_right = {
+    timeline: [
+      {
+        type: 'html-keyboard-response',
+        stimulus: '<p>+</p>',
+        trial_duration: parity_fixation_duration,
+        choices: jsPsych.NO_KEYS
+      },
+      {
+        type: 'html-keyboard-response',
+        stimulus: function(){ return "<p>"+jsPsych.timelineVariable('digit', true)+"</p>"},
+        choices: ['a', 'l'],
+        data: {
+          correct_response: jsPsych.timelineVariable('target_response'),
+          parity: jsPsych.timelineVariable('parity'),
+          task: 'parity'
+        },
+        on_finish: function(data){
+          data.correct = data.correct_response == jsPsych.pluginAPI.convertKeyCodeToKeyCharacter(data.key_press);
+        }
+      },
+      {
+        type: 'html-keyboard-response',
+        stimulus: function(){
+          if(jsPsych.data.get().last(1).values()[0].correct){
+            return '<p>+</p>';
+          } else {
+            return '<p style="color: red;">+</p>';
+          }
+        },
+        trial_duration: parity_feedback_fixation_duration,
+        choices: jsPsych.NO_KEYS,
+        post_trial_gap: parity_blank_duration
+      }
+    ],
+    timeline_variables: [
+      {digit: 1, parity: 'odd', target_response: 'l'},
+      {digit: 2, parity: 'even', target_response: 'a'},
+      {digit: 3, parity: 'odd', target_response: 'l'},
+      {digit: 4, parity: 'even', target_response: 'a'},
+      {digit: 6, parity: 'even', target_response: 'a'},
+      {digit: 7, parity: 'odd', target_response: 'l'},
+      {digit: 8, parity: 'even', target_response: 'a'},
+      {digit: 9, parity: 'odd', target_response: 'l'},
+    ],
+    randomize_order: true,
+    repetitions: load_repetitions_per_digit_per_trial
+  }
+
+  var load_verbal_practice_left = {
+    timeline: [
+      {
+        type: 'html-keyboard-response',
+        stimulus: '',
+        choices: jsPsych.NO_KEYS,
+        trial_duration: wm_span_verbal_pre_blank_duration,
+      },
+      {
+        timeline: [
+          {
+            type: 'html-keyboard-response',
+            stimulus: function(){
+              return '<p>'+jsPsych.timelineVariable('sequence',true)[seq_loc]+'</p>'
+            },
+            choices: jsPsych.NO_KEYS,
+            trial_duration: wm_span_verbal_letter_duration,
+            post_trial_gap: wm_span_verbal_letter_post_blank_duration
+          }
+        ],
+        loop_function: function(){
+          seq_loc++;
+          if(seq_loc == phase_3_span){
+            return false;
+          } else {
+            return true;
+          }
+        }
+      },
+      {
+        type: 'html-keyboard-response',
+        stimulus: '',
+        choices: jsPsych.NO_KEYS,
+        trial_duration: wm_span_verbal_pre_blank_duration - wm_span_verbal_letter_post_blank_duration,
+        on_finish: function(){
+          seq_loc = 0;
+        }
+      },
+      load_task_odd_left,
+      {
+        type: 'echo-response',
+        prompt: '<div class="instructions"><p>Type the sequence of letters in the same order you saw them</p></div>',
+        sequence: function(){
+          return jsPsych.timelineVariable('sequence', true).slice(0, phase_3_span);
+        },
+        echo_font_size: 48,
+        data: {
+          task: 'wm',
+          length: function(){ return phase_3_span; }
+        }
+      }
+    ],
+    data: {
+      phase: 'load-practice'
+    },
+    timeline_variables: [
+      {sequence: generate_consonant_sequence(7)}
+    ]
+  }
+
+  var load_verbal_practice_right = {
+    timeline: [
+      {
+        type: 'html-keyboard-response',
+        stimulus: '',
+        choices: jsPsych.NO_KEYS,
+        trial_duration: wm_span_verbal_pre_blank_duration,
+      },
+      {
+        timeline: [
+          {
+            type: 'html-keyboard-response',
+            stimulus: function(){
+              return '<p>'+jsPsych.timelineVariable('sequence',true)[seq_loc]+'</p>'
+            },
+            choices: jsPsych.NO_KEYS,
+            trial_duration: wm_span_verbal_letter_duration,
+            post_trial_gap: wm_span_verbal_letter_post_blank_duration
+          }
+        ],
+        loop_function: function(){
+          seq_loc++;
+          if(seq_loc == phase_3_span){
+            return false;
+          } else {
+            return true;
+          }
+        }
+      },
+      {
+        type: 'html-keyboard-response',
+        stimulus: '',
+        choices: jsPsych.NO_KEYS,
+        trial_duration: wm_span_verbal_pre_blank_duration - wm_span_verbal_letter_post_blank_duration,
+        on_finish: function(){
+          seq_loc = 0;
+        }
+      },
+      load_task_odd_right,
+      {
+        type: 'echo-response',
+        prompt: '<div class="instructions"><p>Type the sequence of letters in the same order you saw them</p></div>',
+        sequence: function(){
+          return jsPsych.timelineVariable('sequence', true).slice(0, phase_3_span);
+        },
+        echo_font_size: 48,
+        data: {
+          task: 'wm',
+          length: function(){ return phase_3_span; }
+        }
+      }
+    ],
+    data: {
+      phase: 'load-practice'
+    },
+    timeline_variables: [
+      {sequence: generate_consonant_sequence(7)}
+    ]
+  }
+
+  var load_verbal_left = {
+    timeline: [
+      {
+        type: 'html-keyboard-response',
+        stimulus: '',
+        choices: jsPsych.NO_KEYS,
+        trial_duration: wm_span_verbal_pre_blank_duration,
+      },
+      {
+        timeline: [
+          {
+            type: 'html-keyboard-response',
+            stimulus: function(){
+              return '<p>'+jsPsych.timelineVariable('sequence',true)[seq_loc]+'</p>'
+            },
+            choices: jsPsych.NO_KEYS,
+            trial_duration: wm_span_verbal_letter_duration,
+            post_trial_gap: wm_span_verbal_letter_post_blank_duration
+          }
+        ],
+        loop_function: function(){
+          seq_loc++;
+          if(seq_loc == phase_3_span){
+            return false;
+          } else {
+            return true;
+          }
+        }
+      },
+      {
+        type: 'html-keyboard-response',
+        stimulus: '',
+        choices: jsPsych.NO_KEYS,
+        trial_duration: wm_span_verbal_pre_blank_duration - wm_span_verbal_letter_post_blank_duration,
+        on_finish: function(){
+          seq_loc = 0;
+        }
+      },
+      load_task_odd_left,
+      {
+        type: 'echo-response',
+        prompt: '<div class="instructions"><p>Type the sequence of letters in the same order you saw them</p></div>',
+        sequence: function(){
+          return jsPsych.timelineVariable('sequence', true).slice(0, phase_3_span);
+        },
+        echo_font_size: 48,
+        data: {
+          task: 'wm',
+          length: function() { return phase_3_span; }
+        }
+      }
+    ],
+    data: {
+      phase: 'load'
+    },
+    timeline_variables: [
+      {sequence: generate_consonant_sequence(7) },
+      {sequence: generate_consonant_sequence(7) },
+      {sequence: generate_consonant_sequence(7) },
+      {sequence: generate_consonant_sequence(7) },
+      {sequence: generate_consonant_sequence(7) },
+      {sequence: generate_consonant_sequence(7) },
+      {sequence: generate_consonant_sequence(7) },
+      {sequence: generate_consonant_sequence(7) },
+      {sequence: generate_consonant_sequence(7) },
+      {sequence: generate_consonant_sequence(7) },
+      {sequence: generate_consonant_sequence(7) },
+      {sequence: generate_consonant_sequence(7) }
+    ]
+  }
+
+  var load_verbal_right = {
+    timeline: [
+      {
+        type: 'html-keyboard-response',
+        stimulus: '',
+        choices: jsPsych.NO_KEYS,
+        trial_duration: wm_span_verbal_pre_blank_duration,
+      },
+      {
+        timeline: [
+          {
+            type: 'html-keyboard-response',
+            stimulus: function(){
+              return '<p>'+jsPsych.timelineVariable('sequence',true)[seq_loc]+'</p>'
+            },
+            choices: jsPsych.NO_KEYS,
+            trial_duration: wm_span_verbal_letter_duration,
+            post_trial_gap: wm_span_verbal_letter_post_blank_duration
+          }
+        ],
+        loop_function: function(){
+          seq_loc++;
+          if(seq_loc == jsPsych.timelineVariable('sequence', true).length){
+            return false;
+          } else {
+            return true;
+          }
+        }
+      },
+      {
+        type: 'html-keyboard-response',
+        stimulus: '',
+        choices: jsPsych.NO_KEYS,
+        trial_duration: wm_span_verbal_pre_blank_duration - wm_span_verbal_letter_post_blank_duration,
+        on_finish: function(){
+          seq_loc = 0;
+        }
+      },
+      load_task_odd_right,
+      {
+        type: 'echo-response',
+        prompt: '<div class="instructions"><p>Type the sequence of letters in the same order you saw them</p></div>',
+        sequence: function(){
+          return jsPsych.timelineVariable('sequence', true).slice(0, phase_3_span);
+        },
+        echo_font_size: 48,
+        data: {
+          task: 'wm',
+          length: function() { return phase_3_span }
+        }
+      }
+    ],
+    data: {
+      phase: 'load'
+    },
+    timeline_variables: [
+      {sequence: generate_consonant_sequence(7) },
+      {sequence: generate_consonant_sequence(7) },
+      {sequence: generate_consonant_sequence(7) },
+      {sequence: generate_consonant_sequence(7) },
+      {sequence: generate_consonant_sequence(7) },
+      {sequence: generate_consonant_sequence(7) },
+      {sequence: generate_consonant_sequence(7) },
+      {sequence: generate_consonant_sequence(7) },
+      {sequence: generate_consonant_sequence(7) },
+      {sequence: generate_consonant_sequence(7) },
+      {sequence: generate_consonant_sequence(7) },
+      {sequence: generate_consonant_sequence(7) }
+    ]
+  }
+
+  var load_spatial_practice_left = {
+    timeline: [
+      {
+        type: 'corsi',
+        mode: 'display',
+        sequence: function(){
+          return jsPsych.timelineVariable('sequence', true).slice(0,phase_3_span)
+        },
+        blocks: corsi_original_config,
+        sequence_duration: wm_span_spatial_block_duration,
+        sequence_iti: wm_span_spatial_block_gap_duration,
+        pre_stim_duration: wm_span_spatial_pre_sequence_duration,
+        post_trial_gap: wm_span_spatial_post_sequence_blank_duration
+      },
+      load_task_odd_left,
+      {
+        type: 'corsi',
+        mode: 'input',
+        sequence: function(){
+          return jsPsych.timelineVariable('sequence', true).slice(0,phase_3_span)
+        },
+        blocks: corsi_original_config,
+        post_trial_gap: wm_span_spatial_post_sequence_blank_duration
+      }
+    ],
+    timeline_variables: [
+      {sequence: jsPsych.randomization.sampleWithoutReplacement([0,1,2,3,4,5,6,7,8], 7)}
+    ],
+    data: {
+      phase: 'load-practice'
+    }
+  }
+
+  var load_spatial_practice_right = {
+    timeline: [
+      {
+        type: 'corsi',
+        mode: 'display',
+        sequence: function(){
+          return jsPsych.timelineVariable('sequence', true).slice(0,phase_3_span)
+        },
+        blocks: corsi_original_config,
+        sequence_duration: wm_span_spatial_block_duration,
+        sequence_iti: wm_span_spatial_block_gap_duration,
+        pre_stim_duration: wm_span_spatial_pre_sequence_duration,
+        post_trial_gap: wm_span_spatial_post_sequence_blank_duration
+      },
+      load_task_odd_right,
+      {
+        type: 'corsi',
+        mode: 'input',
+        sequence: function(){
+          return jsPsych.timelineVariable('sequence', true).slice(0,phase_3_span)
+        },
+        blocks: corsi_original_config,
+        post_trial_gap: wm_span_spatial_post_sequence_blank_duration
+      }
+    ],
+    timeline_variables: [
+    {sequence: jsPsych.randomization.sampleWithoutReplacement([0,1,2,3,4,5,6,7,8], 7)}
+    ],
+    data: {
+      phase: 'load-practice'
+    }
+  }
+
+  var load_spatial_left = {
+    timeline: [
+      {
+        type: 'corsi',
+        mode: 'display',
+        sequence: function(){ 
+          return jsPsych.randomization.sampleWithoutReplacement([0,1,2,3,4,5,6,7,8], phase_3_span);
+        },
+        blocks: jsPsych.timelineVariable('blocks'),
+        sequence_duration: wm_span_spatial_block_duration,
+        sequence_iti: wm_span_spatial_block_gap_duration,
+        pre_stim_duration: wm_span_spatial_pre_sequence_duration,
+        post_trial_gap: wm_span_spatial_post_sequence_blank_duration
+      },
+      load_task_odd_left,
+      {
+        type: 'corsi',
+        mode: 'input',
+        sequence: function(){ 
+          return JSON.parse(jsPsych.data.get().filter({trial_type: 'corsi'}).last(1).values()[0].sequence);
+        },
+        blocks: jsPsych.timelineVariable('blocks'),
+        post_trial_gap:wm_span_spatial_post_sequence_blank_duration
+      }
+    ],
+    timeline_variables: [
+      {blocks: corsi_configs[0]},
+      {blocks: corsi_configs[1]},
+      {blocks: corsi_configs[2]},
+      {blocks: corsi_configs[3]},
+      {blocks: corsi_configs[4]},
+      {blocks: corsi_configs[5]}
+    ],
+    data: {
+      phase: 'load'
+    },
+    randomize_order: true,
+    repetitions: 2
+  }
+
+  var load_spatial_right = {
+    timeline: [
+      {
+        type: 'corsi',
+        mode: 'display',
+        sequence: function(){ 
+          return jsPsych.randomization.sampleWithoutReplacement([0,1,2,3,4,5,6,7,8], phase_3_span);
+        },
+        blocks: jsPsych.timelineVariable('blocks'),
+        sequence_duration: wm_span_spatial_block_duration,
+        sequence_iti: wm_span_spatial_block_gap_duration,
+        pre_stim_duration: wm_span_spatial_pre_sequence_duration,
+        post_trial_gap: wm_span_spatial_post_sequence_blank_duration
+      },
+      load_task_odd_right,
+      {
+        type: 'corsi',
+        mode: 'input',
+        sequence: function(){ 
+          return JSON.parse(jsPsych.data.get().filter({trial_type: 'corsi'}).last(1).values()[0].sequence);
+        },
+        blocks: jsPsych.timelineVariable('blocks'),
+        post_trial_gap:wm_span_spatial_post_sequence_blank_duration
+      }
+    ],
+    timeline_variables: [
+      {blocks: corsi_configs[0]},
+      {blocks: corsi_configs[1]},
+      {blocks: corsi_configs[2]},
+      {blocks: corsi_configs[3]},
+      {blocks: corsi_configs[4]},
+      {blocks: corsi_configs[5]}
+    ],
+    data: {
+      phase: 'load'
+    },
+    randomize_order: true,
+    repetitions: 2
+  }
+
+  if(run_phase_3){
+    timeline.push(load_instructions)
+    if(wm_type == 'verbal'){
+      timeline.push(load_instructions_verbal);
+      odd_left_first ? timeline.push(load_instructions_left) : timeline.push(load_instructions_right);
+      odd_left_first ? timeline.push(load_verbal_practice_left) : timeline.push(load_verbal_practice_right);
+      timeline.push(load_instructions_post_practice);
+      odd_left_first ? timeline.push(load_verbal_left) : timeline.push(load_verbal_right);
+      timeline.push(load_instructions_switch);
+      odd_left_first ? timeline.push(load_instructions_right) : timeline.push(load_instructions_left);
+      odd_left_first ? timeline.push(load_verbal_practice_right) : timeline.push(load_verbal_practice_left);
+      timeline.push(load_instructions_post_practice);
+      odd_left_first ? timeline.push(load_verbal_right) : timeline.push(load_verbal_left);
+    }
+    if(wm_type == 'spatial'){
+      timeline.push(load_instructions_spatial);
+      odd_left_first ? timeline.push(load_instructions_left) : timeline.push(load_instructions_right);
+      odd_left_first ? timeline.push(load_spatial_practice_left) : timeline.push(load_spatial_practice_right);
+      timeline.push(load_instructions_post_practice);
+      odd_left_first ? timeline.push(load_spatial_left) : timeline.push(load_spatial_right);
+      timeline.push(load_instructions_switch);
+      odd_left_first ? timeline.push(load_instructions_right) : timeline.push(load_instructions_left);
+      odd_left_first ? timeline.push(load_spatial_practice_right) : timeline.push(load_spatial_practice_left);
+      timeline.push(load_instructions_post_practice);
+      odd_left_first ? timeline.push(load_spatial_right) : timeline.push(load_spatial_left);
+    }
+  }
+  
+
+  //#endregion
+
+  //#region debrief
+  var save_data = {
+    type: 'call-function',
+    func: function(){
+      var data = jsPsych.data.get().values();
+      //serverComm.save_data(data);
+    }
+  }
+  
+  var debrief = {
+    type: 'html-keyboard-response',
+    stimulus: '<div class="instructions">'+
+      '<p>You have completed the experiment. Thank you for participating!</p>'+
+      '<p>Please let the researcher know that you are finished.</p>'+
+      '<p>The researcher will let you know more about the purpose of the study.</p>',
+    choices: jsPsych.NO_KEYS
+  }
+
+  timeline.push(save_data);
+  timeline.push(debrief);
+  //#endregion
+
+  jsPsych.init({
+    timeline: timeline
+  })
+
+
+  </script>
+</html>
