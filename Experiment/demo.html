@@ -55,13 +55,21 @@
   var wm_span_spatial_block_gap_duration = 500
   var wm_span_spatial_post_sequence_blank_duration = 1500
 
-  var baseline_repetitions_per_digit_side = 16;
+  var baseline_repetitions_per_digit_side = 2;
 
-  var load_repetitions_per_digit_per_trial = 2;
+  var load_repetitions_per_digit_per_trial = 1;
 
   // #endregion //
 
   var timeline = [];
+
+  //#region demo warning
+  var demo_warning = {
+    type: 'html-keyboard-response',
+    stimulus: '<div class="instructions"><p>This is a demo version of the experiment. It has been shortened from the full length version.</p>'+
+      '<p>Press any key to continue.</p>'
+  }
+  timeline.push(demo_warning);
 
   //#region age survey
 
