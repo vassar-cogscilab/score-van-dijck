@@ -48,3 +48,8 @@ all.data <- all.data %>%
 
 write_csv(all.data, path="data/fake/testing_data.csv")
 
+# add self-include data
+
+self.include.data <- data.frame(subject = 1:n.subjects, response = sample(c("Yes", "No"), n.subjects, replace=T))
+
+write_csv(self.include.data, path="data/fake/self_include_data.csv")
