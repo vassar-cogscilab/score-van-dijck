@@ -16,6 +16,9 @@
     p { font-size: 72px; }
     .instructions { width: 750px; }
     .instructions p { font-size: 18px; }
+    #consent {width: 750px; text-align: left;}
+    #consent p { font-size: 14px; }
+    #consent p.head { text-align: center;}
     </style>
   </head>
   <body>
@@ -43,7 +46,7 @@
       document.querySelector('body').innerHTML = '<div class="instructions"><p>Our apologies. There was a technical error on our end while loading the experiment.</p><p>You will not be able to complete the experiment. We are sorry for the trouble.</p></div>';
     }
   );
-  var phase_3_span = 4; // set to undefined for real experiment, can set here to debug
+  var phase_3_span = undefined; // set to undefined for real experiment, can set here to debug
   var odd_left_first = jsPsych.randomization.sampleWithoutReplacement([true, false], 1)[0];
   // #endregion
 
@@ -81,6 +84,48 @@
 
   function build_experiment(){
     
+    //#region consent
+
+    var consent = {
+      type: 'html-button-response',
+      stimulus: '<div id="consent">'+
+        '<p class="head"><span style="font-weight:bold;">VASSAR COLLEGE</span><br>'+
+        'Department of Cognitive Science<br>'+
+        'Adult Consent Form</p>'+
+  
+        '<p><span style="font-weight:bold;">Primary Investigator:</span> Joshua de Leeuw</p>'+
+
+        '<p><span style="font-weight:bold;">Student Researcher(s):</span> Tessa Charles, Margaret Ritzau</p>'+
+
+        '<p><span style="font-weight:bold;">Title of Project:</span> Replication of a research claim from van Dijck et al, 2009, in Cognition</p>'+
+
+        '<p>This research project is part of an effort to establish the replicability of research claims in the social and behavioral sciences. We are interested in whether we can find the same results as previously published research.</p>'+
+
+        '<p>This experiment has three parts. In part 1, you will see digits on the screen and indicate whether the digits are even or odd as quickly as possible. In part 2, you will memorize sequences of items presented one at a time, and then attempt to recall the sequences. In part 3, you will do both tasks together. You’ll memorize a sequence, then judge whether digits are even or odd, and then recall the sequence.</p>'+
+
+        '<p>The study will take approximately 45 minutes to complete, and you will be compensated $15 for participation.</p>'+
+
+        '<p>This project is sponsored by the Department of Defense through an award to the Center for Open Science.</p>'+
+
+        '<p>Authorized representatives from the Department of Defense Human Research  Protection Program may review and/or obtain information related to your participation in this research study as part of their responsibility to protect human research subject volunteers.</p>'+
+
+        '<p>De-identified (anonymous) versions of your data will be shared with the research community on the Open Science Framework (https://osf.io) upon completion of the project.</p>'+
+
+        '<p>If you have any questions or concerns about this research project you may contact Professor Josh de Leeuw at jdeleeuw@vassar.edu.</p>'+
+
+        '<p><span style="font-weight:bold;">Potential Risks:</span> The risk of participation in this study is minimal, meaning that the risk is no greater than the risk posed by everyday activities.</p>'+ 
+
+        '<p><span style="font-weight:bold;">Potential Benefits:</span> There are no benefits to participating in this study.</p>'+
+
+        '<p>I am aware, to the extent specified above, of the nature of my participation in this project and the possible risks involved or arising from it. I understand that I may withdraw my participation in this project at any time without prejudice or penalty of any kind. I hereby agree to participate in the project. (You must be at least 18 years of age to give your consent.)</p>',
+
+      choices: ['I agree to participate'],
+      margin_vertical: '20px'
+    }
+
+    timeline.push(consent);
+
+    //#endregion
 
     //#region age survey
 
@@ -1080,7 +1125,7 @@
           ],
           loop_function: function(){
             seq_loc++;
-            if(seq_loc == jsPsych.timelineVariable('sequence', true).length){
+            if(seq_loc == phase_3_span){
               return false;
             } else {
               return true;
