@@ -148,9 +148,11 @@ tradeoff.phase.3 <- all.parity.data %>%
 
 ggplot(tradeoff.phase.3, aes(x=percent.correct, y=median.rt))+
   geom_point()+
-  facet_wrap(.~wmtask)+
-  geom_smooth(method="lm", se=F)+
-  theme_bw()
+  facet_wrap(.~wmtask, labeller = labeller(wmtask=c(spatial="Spatial WM Load", verbal="Verbal WM Load")))+
+  labs(x="Parity Judgment Percent Correct, Under Load", y="Median Response Time (ms)")+
+  geom_smooth(method="lm", se=T, color="darkblue", size=0.5)+
+  theme_bw()+
+  theme(panel.grid=element_blank())
 ```
 
 ```{r}
@@ -189,7 +191,7 @@ lm.result <- summary.drt %>%
   nest() %>%
   mutate(dRT.coefficient = map(data, magnitude_model)) %>%
   select(-data) %>%
-  unnest()
+  unnest(cols=c(dRT.coefficient))
 ```
 
 Calculate overall RT diff from baseline to dual load and merge into `lm.result` data.
@@ -232,8 +234,10 @@ plotting.data <- lm.result %>%
   summarize(mean.coefficient = mean(dRT.coefficient), se = sd(dRT.coefficient) / sqrt(n()))
 
 ggplot(plotting.data, aes(x=wmtask, y=mean.coefficient, ymin=mean.coefficient - se, ymax = mean.coefficient + se, color=phase))+
-  geom_hline(yintercept = 0)+
+  geom_hline(yintercept = 0, color="grey50", linetype="longdash")+
   geom_pointrange(position = position_dodge2(width=0.5)) +
+  scale_color_brewer(palette = "Set1", labels=c("Baseline", "Dual-Task"))+
+  scale_x_discrete(labels=c("Spatial", "Verbal"))+
   labs(x="Working Memory Task", y="Average Regression Weights", color="Phase")+
   scale_y_reverse()+
   theme_bw() +
@@ -262,6 +266,7 @@ t.test(spatial.effect$dRT.coefficient, alternative="less")
 ```{r}
 library(TOSTER)
 verbal.effect <- lm.result %>% filter(phase=="dual", wmtask=="verbal") %>%
+  group_by(phase, wmtask) %>%
   summarize(m=mean(dRT.coefficient),sd=sd(dRT.coefficient),n=n())
 
 TOSTER::TOSTone.raw(verbal.effect$m, mu=0, sd=verbal.effect$sd, n=verbal.effect$n,low_eqbound = -1.5,high_eqbound = 1.5, alpha=0.05, verbose=F)
