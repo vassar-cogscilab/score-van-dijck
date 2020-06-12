@@ -1196,7 +1196,8 @@
             return jsPsych.timelineVariable('sequence', true).slice(0,phase_3_span)
           },
           blocks: corsi_original_config,
-          post_trial_gap: wm_span_spatial_post_sequence_blank_duration
+          post_trial_gap: wm_span_spatial_post_sequence_blank_duration,
+          prompt: 'Click the squares in the correct order',
         }
       ],
       timeline_variables: [
@@ -1229,7 +1230,8 @@
             return jsPsych.timelineVariable('sequence', true).slice(0,phase_3_span)
           },
           blocks: corsi_original_config,
-          post_trial_gap: wm_span_spatial_post_sequence_blank_duration
+          post_trial_gap: wm_span_spatial_post_sequence_blank_duration,
+          prompt: 'Click the squares in the correct order',
         }
       ],
       timeline_variables: [
@@ -1262,7 +1264,8 @@
             return JSON.parse(jsPsych.data.get().filter({trial_type: 'corsi'}).last(1).values()[0].sequence);
           },
           blocks: jsPsych.timelineVariable('blocks'),
-          post_trial_gap:wm_span_spatial_post_sequence_blank_duration
+          post_trial_gap:wm_span_spatial_post_sequence_blank_duration,
+          prompt: 'Click the squares in the correct order',
         }
       ],
       timeline_variables: [
@@ -1302,7 +1305,8 @@
             return JSON.parse(jsPsych.data.get().filter({trial_type: 'corsi'}).last(1).values()[0].sequence);
           },
           blocks: jsPsych.timelineVariable('blocks'),
-          post_trial_gap:wm_span_spatial_post_sequence_blank_duration
+          post_trial_gap:wm_span_spatial_post_sequence_blank_duration,
+          prompt: 'Click the squares in the correct order',
         }
       ],
       timeline_variables: [

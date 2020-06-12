@@ -22,13 +22,13 @@ jsPsych.plugins["corsi"] = (function() {
         array: true
       },
       block_size: {
-        default: 50
+        default: 35
       },
       arena_width: {
-        default:600
+        default:400
       },
       arena_height: {
-        default:600
+        default:400
       }
     }
   }
