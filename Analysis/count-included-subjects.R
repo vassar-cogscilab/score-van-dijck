@@ -4,8 +4,9 @@
 library(readr)
 library(dplyr)
 
-all.parity.data <- read_csv('data/fake/testing_data.csv')
-post.task.q.data <- read_csv('data/fake/self_include_data.csv')
+all.parity.data <- read_csv('data/pilot/parity-data.csv')
+wm.data <- read_csv('data/pilot/wm-data.csv')
+post.task.q.data <- read_csv('data/pilot/self-include-data.csv')
 
 all.parity.data <- all.parity.data %>%
   group_by(subject) %>%
@@ -44,12 +45,9 @@ rt.inclusion <- all.parity.data %>%
   summarize(median = median(rt)) %>%
   mutate(rt.include = median < (group.rt$group.median + 4*group.rt$group.sd))
 
-mem.inclusion <- all.parity.data %>%
-  filter(phase=="dual") %>%
-  group_by(subject, block, odd) %>%
-  summarize(mem.correct = all(mem.correct)) %>%
+mem.inclusion <- wm.data %>%
   group_by(subject) %>%
-  summarize(n.correct = sum(mem.correct)) %>%
+  summarize(n.correct = sum(correct)) %>%
   mutate(mem.include = n.correct >= 6)
 
 final.include <- rt.inclusion %>%

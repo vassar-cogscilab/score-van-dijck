@@ -18,7 +18,10 @@ Loading in lightly pre-processed data. The raw data from the experiment will be 
 
 ```{r message=FALSE, warning=FALSE}
 all.parity.data <- read_csv('data/fake/testing_data.csv')
+all.parity.data <- read_csv('data/pilot/parity-data.csv')
+wm.data <- read_csv('data/pilot/wm-data.csv')
 post.task.q.data <- read_csv('data/fake/self_include_data.csv')
+post.task.q.data <- read_csv('data/pilot/self-include-data.csv')
 ```
 
 ## Subject inclusion criteria
@@ -74,12 +77,9 @@ rt.inclusion <- all.parity.data %>%
   summarize(median = median(rt)) %>%
   mutate(rt.include = median < (group.rt$group.median + 4*group.rt$group.sd))
 
-mem.inclusion <- all.parity.data %>%
-  filter(phase=="dual") %>%
-  group_by(subject, block, odd) %>%
-  summarize(mem.correct = all(mem.correct)) %>%
+mem.inclusion <- wm.data %>%
   group_by(subject) %>%
-  summarize(n.correct = sum(mem.correct)) %>%
+  summarize(n.correct = sum(correct)) %>%
   mutate(mem.include = n.correct >= 6)
 
 final.include <- rt.inclusion %>%
@@ -100,6 +100,9 @@ Apply inclusion criteria to data set, keeping only subjects who meet inclusion c
 ```{r}
 filtered.parity.data <- all.parity.data %>%
   filter(subject %in% good.subjects)
+
+filtered.wm.data <- wm.data %>%
+  filter(subject %in% good.subjects)
 ```
 
 Find the total number of subjects left in each condition.
@@ -115,12 +118,9 @@ filtered.parity.data %>%
 What percentage of memory items were correctly recalled in each condition?
 
 ```{r}
-mem.phase.3 <- all.parity.data %>%
-  filter(phase=="dual") %>%
-  group_by(subject, wmtask, block, odd) %>%
-  summarize(mem.correct = all(mem.correct)) %>%
+mem.phase.3 <- filtered.wm.data %>%
   group_by(subject, wmtask) %>%
-  summarize(n.correct = sum(mem.correct)) %>%
+  summarize(n.correct = sum(correct)) %>%
   mutate(percent.correct = (n.correct / 24)*100)
 
 mem.phase.3.summary <- mem.phase.3 %>%
@@ -130,21 +130,21 @@ mem.phase.3.summary <- mem.phase.3 %>%
 mem.phase.3.summary
 ```
 
-Is there a statisically significant difference between recall for different WM types?
+Is there a statistically significant difference between recall for different WM types?
 (Original paper found that the verbal load was easier, with 95% correctly recalled vs. 76% in the spatial).
 
 ```{r}
 t.test(n.correct ~ wmtask, data=mem.phase.3)
 ```
 
-Is there evidence of a tradeoff between WM performance and parity judgment performance in phase 3? (e.g., people who correctly recall more sequences are slower at correct parity judgments)
+Is there evidence of a trade-off between WM performance and parity judgment performance in phase 3? (e.g., people who correctly recall more sequences are slower at correct parity judgments)
 
 ```{r}
-tradeoff.phase.3 <- all.parity.data %>%
-  filter(phase=="dual", correct==T) %>%
+tradeoff.phase.3 <- filtered.parity.data %>%
+  filter(phase=="load", correct==T) %>%
   group_by(subject, wmtask) %>%
   summarize(median.rt=median(rt)) %>%
-  left_join(mem.phase.3)
+  left_join(mem.phase.3, by=c("subject", "wmtask"))
 
 ggplot(tradeoff.phase.3, aes(x=percent.correct, y=median.rt))+
   geom_point()+
@@ -202,7 +202,7 @@ covariate.diff <- filtered.parity.data %>%
   group_by(subject, phase) %>%
   summarize(median.rt = median(rt)) %>%
   spread(phase, median.rt) %>%
-  mutate(phase.diff = dual - baseline) %>%
+  mutate(phase.diff = load - baseline) %>%
   select(subject, phase.diff)
 
 lm.result <- lm.result %>%
